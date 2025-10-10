@@ -1,6 +1,6 @@
 from langchain_ollama import OllamaLLM
 from langchain.prompts import PromptTemplate
-from app.services.intent_handlers import handle_greeting, handle_faq, handle_get_course_info
+from app.services.intent_handlers import handle_greeting, handle_faq
 from app.services.context_services import get_session_history, save_message
 from app.models.llm_config import llm
 
