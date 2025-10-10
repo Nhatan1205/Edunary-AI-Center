@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - AI Chatbot Embedded</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .demo-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .demo-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            border-bottom: 3px solid #3FCCB2;
+            padding-bottom: 10px;
+        }
+
+        .chatbot-container {
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chatbot-iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .code-section {
+            margin-top: 20px;
+        }
+
+        .code-section h3 {
+            color: #555;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #3FCCB2;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #2daa94;
+        }
+
+        .copy-btn.copied {
+            background: #4caf50;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .feature-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            color: #555;
+        }
+
+        .feature-list li:before {
+            content: "✓ ";
+            color: #3FCCB2;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .fullwidth-demo {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .fullwidth-demo h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            border-bottom: 3px solid #3FCCB2;
+            padding-bottom: 10px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .info-box p {
+            color: #1565C0;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .chatbot-iframe {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Chatbot - Demo Nhúng vào Website</h1>
+            <p>Tích hợp chatbot AI vào website của bạn chỉ với vài dòng code</p>
+        </div>
+
+        <div class="demo-grid">
+            <!-- Live Demo -->
+            <div class="demo-card">
+                <h2>💬 Live Demo</h2>
+                <div class="chatbot-container">
+                    <iframe 
+                        src="http://localhost:8000/embed" 
+                        class="chatbot-iframe"
+                        title="AI Chatbot Demo"
+                        allow="microphone">
+                    </iframe>
+                </div>
+                <div class="info-box">
+                    <p><strong>💡 Thử chat ngay!</strong> Chatbot đang chạy live từ server.</p>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="demo-card">
+                <h2>📝 Cách Nhúng vào Website</h2>
+                
+                <div class="code-section">
+                    <h3>1. Copy code HTML này:</h3>
+                    <div class="code-block" id="code1">
+                        <button class="copy-btn" onclick="copyCode('code1')">Copy</button>
+<pre>&lt;!-- Nhúng AI Chatbot vào website --&gt;
+&lt;iframe 
+    src="http://localhost:8000/embed" 
+    width="100%" 
+    height="600px"
+    frameborder="0"
+    style="border: none; border-radius: 12px;"
+    title="AI Chatbot"&gt;
+&lt;/iframe&gt;</pre>
+                    </div>
+                </div>
+
+                <div class="code-section">
+                    <h3>2. Hoặc dùng JavaScript:</h3>
+                    <div class="code-block" id="code2">
+                        <button class="copy-btn" onclick="copyCode('code2')">Copy</button>
+<pre>&lt;div id="chatbot-container"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+    const chatbotDiv = document.getElementById('chatbot-container');
+    const iframe = document.createElement('iframe');
+    iframe.src = 'http://localhost:8000/embed';
+    iframe.width = '100%';
+    iframe.height = '600px';
+    iframe.style.border = 'none';
+    iframe.style.borderRadius = '12px';
+    chatbotDiv.appendChild(iframe);
+&lt;/script&gt;</pre>
+                    </div>
+                </div>
+
+                <h3>✨ Tính năng:</h3>
+                <ul class="feature-list">
+                    <li>Responsive - Tự động điều chỉnh theo màn hình</li>
+                    <li>WebSocket - Streaming response real-time</li>
+                    <li>Session management - Lưu lịch sử chat</li>
+                    <li>Typing indicator - Hiệu ứng đang gõ</li>
+                    <li>Auto-reconnect - Tự động kết nối lại</li>
+                    <li>Mobile friendly - Tối ưu cho mobile</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Full Width Example -->
+        <div class="fullwidth-demo">
+            <h2>🚀 Ví dụ Fullwidth</h2>
+            <div class="info-box">
+                <p><strong>📌 Lưu ý:</strong> Thay <code>http://localhost:8000</code> bằng URL thực của server khi deploy production.</p>
+            </div>
+            <div class="code-section">
+                <h3>Code mẫu - Chatbot fullwidth trong container:</h3>
+                <div class="code-block" id="code3">
+                    <button class="copy-btn" onclick="copyCode('code3')">Copy</button>
+<pre>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;
+        .chatbot-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .chatbot-frame {
+            width: 100%;
+            height: 700px;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class="chatbot-wrapper"&gt;
+        &lt;iframe 
+            src="http://localhost:8000/embed"
+            class="chatbot-frame"
+            title="AI Chatbot"&gt;
+        &lt;/iframe&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+                </div>
+            </div>
+
+            <div class="code-section">
+                <h3>Tùy chỉnh kích thước:</h3>
+                <div class="code-block" id="code4">
+                    <button class="copy-btn" onclick="copyCode('code4')">Copy</button>
+<pre>&lt;!-- Sidebar chat (300px width) --&gt;
+&lt;iframe src="http://localhost:8000/embed" width="300px" height="600px"&gt;&lt;/iframe&gt;
+
+&lt;!-- Standard chat (400px width) --&gt;
+&lt;iframe src="http://localhost:8000/embed" width="400px" height="650px"&gt;&lt;/iframe&gt;
+
+&lt;!-- Large chat (500px width) --&gt;
+&lt;iframe src="http://localhost:8000/embed" width="500px" height="700px"&gt;&lt;/iframe&gt;
+
+&lt;!-- Fullscreen chat --&gt;
+&lt;iframe src="http://localhost:8000/embed" width="100%" height="100vh"&gt;&lt;/iframe&gt;</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyCode(elementId) {
+            const codeBlock = document.getElementById(elementId);
+            const preElement = codeBlock.querySelector('pre');
+            const button = codeBlock.querySelector('.copy-btn');
+            
+            // Get text content
+            const text = preElement.textContent;
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(text).then(() => {
+                // Change button text
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy code');
+            });
+        }
+    </script>
+</body>
+</html>

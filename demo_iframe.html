@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Iframe Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .demo-section {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .chatbot-iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        
+        .responsive-demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .responsive-demo {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Demo Nhúng AI Chatbot qua Iframe</h1>
+            <p>Đây là ví dụ về cách nhúng chatbot vào website của bạn</p>
+        </div>
+        
+        <div class="demo-section">
+            <div class="demo-card">
+                <h3>💬 Chatbot Interface</h3>
+                <p>Giao diện chatbot được nhúng qua iframe:</p>
+                <iframe 
+                    src="http://localhost:8000/embed" 
+                    class="chatbot-iframe"
+                    title="AI Chatbot">
+                </iframe>
+            </div>
+            
+            <div class="demo-card">
+                <h3>📝 Cách Sử Dụng</h3>
+                <p><strong>1. Nhúng vào website:</strong></p>
+                <div class="code-block">
+&lt;iframe 
+    src="http://localhost:8000/embed" 
+    width="400" 
+    height="600"
+    frameborder="0"
+    style="border-radius: 10px;"&gt;
+&lt;/iframe&gt;
+                </div>
+                
+                <p><strong>2. Hoặc truy cập trực tiếp:</strong></p>
+                <div class="code-block">
+http://localhost:8000/
+                </div>
+                
+                <p><strong>3. API endpoints vẫn hoạt động:</strong></p>
+                <div class="code-block">
+POST http://localhost:8000/api/chat/
+GET  http://localhost:8000/docs
+                </div>
+                
+                <h4>✨ Ưu điểm:</h4>
+                <ul>
+                    <li>🚀 Real-time với WebSocket</li>
+                    <li>⚡ Tốc độ phản hồi nhanh</li>
+                    <li>📱 Responsive design</li>
+                    <li>🔌 Dễ dàng nhúng vào website</li>
+                    <li>🔄 Auto-reconnect khi mất kết nối</li>
+                    <li>💬 Typing indicator</li>
+                    <li>📊 Connection status</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="responsive-demo">
+            <div class="demo-card">
+                <h3>📱 Mobile Size Demo</h3>
+                <iframe 
+                    src="http://localhost:8000/embed" 
+                    width="350" 
+                    height="500"
+                    frameborder="0"
+                    style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                </iframe>
+            </div>
+        
+            <div class="demo-card">
+                <h3>🖥️ Desktop Widget Demo</h3>
+                <iframe 
+                    src="http://localhost:8000/embed" 
+                    width="100%" 
+                    height="400"
+                    frameborder="0"
+                    style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
