@@ -85,51 +85,51 @@ def handle_greeting(message: str) -> str:
 def handle_faq(message: str) -> str:
     return query_rag(message)
 
-def handle_get_course_info(message: str, history: str) -> str:
-    # Extract entities
-    entities_result = (entity_prompt | llm).invoke({"chat_history": history, "input": message})
-    # Handle both string (OllamaLLM) and AIMessage (ChatOpenAI, ChatGoogleGenerativeAI)
-    entities_str = (entities_result.content if hasattr(entities_result, 'content') else entities_result).strip()
+# def handle_get_course_info(message: str, history: str) -> str:
+#     # Extract entities
+#     entities_result = (entity_prompt | llm).invoke({"chat_history": history, "input": message})
+#     # Handle both string (OllamaLLM) and AIMessage (ChatOpenAI, ChatGoogleGenerativeAI)
+#     entities_str = (entities_result.content if hasattr(entities_result, 'content') else entities_result).strip()
 
-    # Clean markdown code blocks from JSON response
-    entities_str_clean = clean_json_response(entities_str)
+#     # Clean markdown code blocks from JSON response
+#     entities_str_clean = clean_json_response(entities_str)
 
-    try:
-        entities = json.loads(entities_str_clean)
+#     try:
+#         entities = json.loads(entities_str_clean)
         
-    except json.JSONDecodeError as e:
-        return "Sorry, I couldn't extract any course information. Could you rephrase your question?"
+#     except json.JSONDecodeError as e:
+#         return "Sorry, I couldn't extract any course information. Could you rephrase your question?"
 
-    # Filter out invalid fields (remove "none", "null", empty lists)
-    valid_entities = {}
-    for k, v in entities.items():
-        if isinstance(v, list):
-            clean_list = [item for item in v if item not in ["none", "null", "", '']]
-            if clean_list:
-                valid_entities[k] = clean_list
-        elif v not in [None, "none", "null", "", '']:
-            valid_entities[k] = v
+#     # Filter out invalid fields (remove "none", "null", empty lists)
+#     valid_entities = {}
+#     for k, v in entities.items():
+#         if isinstance(v, list):
+#             clean_list = [item for item in v if item not in ["none", "null", "", '']]
+#             if clean_list:
+#                 valid_entities[k] = clean_list
+#         elif v not in [None, "none", "null", "", '']:
+#             valid_entities[k] = v
     
 
-    # Fallback if no valid entities
-    if not valid_entities:
-        return "Sorry, I couldn't find any course information from your message. Please ask about a course."
+#     # Fallback if no valid entities
+#     if not valid_entities:
+#         return "Sorry, I couldn't find any course information from your message. Please ask about a course."
 
-    # Call backend API with only valid entities
-    try:
-        response = requests.get("http://localhost:5000/course/search", json=valid_entities)
-        response.raise_for_status()
-        # parse response JSON
-        api_response = response.json()
-        courses_str = json.dumps(api_response, ensure_ascii=False)
+#     # Call backend API with only valid entities
+#     try:
+#         response = requests.get("http://localhost:5000/course/search", json=valid_entities)
+#         response.raise_for_status()
+#         # parse response JSON
+#         api_response = response.json()
+#         courses_str = json.dumps(api_response, ensure_ascii=False)
 
-        # let LLM summarize
-        summary_result = (summary_prompt | llm).invoke({"chat_history": history, "input": message, "courses_json": courses_str})
-        # Handle both string (OllamaLLM) and AIMessage (ChatOpenAI, ChatGoogleGenerativeAI)
-        summary = (summary_result.content if hasattr(summary_result, 'content') else summary_result).strip()
-        return summary
-    except requests.RequestException as e:
-        return "Sorry, I failed to fetch course information."
+#         # let LLM summarize
+#         summary_result = (summary_prompt | llm).invoke({"chat_history": history, "input": message, "courses_json": courses_str})
+#         # Handle both string (OllamaLLM) and AIMessage (ChatOpenAI, ChatGoogleGenerativeAI)
+#         summary = (summary_result.content if hasattr(summary_result, 'content') else summary_result).strip()
+#         return summary
+#     except requests.RequestException as e:
+#         return "Sorry, I failed to fetch course information."
 
 def handle_default(message: str) -> str:
     return None  # để fallback sang chatbot LLM
