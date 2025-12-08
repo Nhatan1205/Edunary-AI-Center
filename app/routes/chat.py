@@ -9,11 +9,15 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 @router.post("/", response_model=ChatResponse)
 def chat_endpoint(request: ChatRequest):
     try:
-        # reply = llm.invoke(request.message)
-        # return ChatResponse(reply=reply)
         session_id = request.session_id or str(uuid.uuid4())
-        reply = process_message(session_id, request.message)
-        return ChatResponse(session_id=session_id, reply=reply)
+        result = process_message(session_id, request.message)
+        
+        return ChatResponse(
+            session_id=session_id,
+            reply=result["reply"],
+            messageType=result["messageType"],
+            courses=result.get("courses")
+        )
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

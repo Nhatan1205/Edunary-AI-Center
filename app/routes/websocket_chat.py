@@ -83,11 +83,18 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
             user_message = message_data.get("message", "")
             
             if user_message:
-                # Process message using chat service
-                reply = process_message(session_id, user_message)
+                # Process message using chat service (now returns dict)
+                result = process_message(session_id, user_message)
                 
                 # Stream response word by word
-                await stream_response(reply, session_id)
+                await stream_response(result["reply"], session_id)
+                
+                # Send course cards if present
+                if result.get("messageType") == "course_cards" and result.get("courses"):
+                    await manager.send_message(json.dumps({
+                        "type": "course_cards",
+                        "courses": result["courses"]
+                    }), session_id)
                 
     except WebSocketDisconnect:
         manager.disconnect(session_id)

@@ -1,5 +1,5 @@
 from langchain_mongodb import MongoDBChatMessageHistory
-from langchain.schema import messages_to_dict, messages_from_dict
+from langchain_core.messages import messages_to_dict, messages_from_dict
 
 # Thông tin kết nối Mongo
 MONGO_URI = "mongodb+srv://nguyenmaihuyhoang_db_user:K8czZk9gtvsO9UqA@cluster0.tg51r0c.mongodb.net/"

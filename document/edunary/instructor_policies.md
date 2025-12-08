@@ -10,22 +10,33 @@ As an instructor, you are responsible for all content that you provide through t
 
 You represent and warrant that:
 
-- You will provide and maintain accurate account information;
-- You own or have the necessary licenses, rights, consents, permissions, and authority to authorize Edunary to use your Submitted Content as specified in these Terms and the Terms of Use;
-- Your Submitted Content will not infringe or misappropriate any third party’s intellectual property rights;
-- You have the required qualifications, credentials, and expertise (including education, training, knowledge, and skill sets) to teach and provide the services you offer through your Submitted Content and use of the Services; and
-- You will ensure a quality of service that corresponds with the standards of your industry and instruction services in general.
+You will provide and maintain accurate account information;
+
+You own or have the necessary licenses, rights, consents, permissions, and authority to authorize Edunary to use your Submitted Content as specified in these Terms and the Terms of Use;
+
+Your Submitted Content will not infringe or misappropriate any third party’s intellectual property rights;
+
+You have the required qualifications, credentials, and expertise (including education, training, knowledge, and skill sets) to teach and provide the services you offer through your Submitted Content and use of the Services; and
+
+You will ensure a quality of service that corresponds with the standards of your industry and instruction services in general.
 
 You warrant that you will not:
 
-- Post or provide any content or information that is inappropriate, offensive, racist, hateful, sexist, pornographic, false, misleading, inaccurate, infringing, defamatory, or libelous;
-- Post or transmit any unsolicited or unauthorized advertising, promotional materials, spam, or any other form of solicitation (commercial or otherwise) through the Services or to any user;
-- Use the Services for business other than providing tutoring, teaching, and instructional services to students;
-- Engage in any activity that would require us to obtain licenses or pay royalties to any third party, including the need to pay royalties for public performances of musical works or sound recordings;
-- Frame or embed the Services (such as to embed a free version of a course) or circumvent the Services;
-- Impersonate another person or gain unauthorized access to another person’s account;
-- Interfere with or prevent other instructors from providing their services or content; or
-- Abuse Edunary resources, including support services.
+Post or provide any content or information that is inappropriate, offensive, racist, hateful, sexist, pornographic, false, misleading, inaccurate, infringing, defamatory, or libelous;
+
+Post or transmit any unsolicited or unauthorized advertising, promotional materials, spam, or any other form of solicitation (commercial or otherwise) through the Services or to any user;
+
+Use the Services for business other than providing tutoring, teaching, and instructional services to students;
+
+Engage in any activity that would require us to obtain licenses or pay royalties to any third party, including the need to pay royalties for public performances of musical works or sound recordings;
+
+Frame or embed the Services (such as to embed a free version of a course) or circumvent the Services;
+
+Impersonate another person or gain unauthorized access to another person’s account;
+
+Interfere with or prevent other instructors from providing their services or content; or
+
+Abuse Edunary resources, including support services.
 
 2. License to Edunary
 You grant Edunary the rights detailed in the Terms of Use to offer, market, and otherwise exploit your Submitted Content. This includes the right to add captions or otherwise modify Submitted Content to ensure accessibility. You also authorize Edunary to sublicense these rights to third parties, including to students directly and through third parties such as resellers, distributors, affiliate sites, deal sites, and paid advertising on third-party platforms. The rights granted in this section include Edunary’s right to apply generative and non-generative AI models to, and to develop and improve non-generative AI models on, your Submitted Content to support the core functionalities of the Services (such as search and recommendations).
@@ -42,12 +53,17 @@ You agree to comply with the Trust & Safety policies, Edunary’s Restricted Top
 
 We reserve the right to remove content, suspend payments, withhold payment, and/or ban instructors for any reason at any time without prior notice, including in cases where:
 
-- An instructor or content violates our policies or legal terms (including the Terms of Use);
-- Content does not meet our quality standards or negatively impacts the student experience;
-- An instructor engages in behavior that reflects poorly on Edunary or exposes Edunary to public disgrace, contempt, scandal, or ridicule;
-- An instructor uses the services of another marketer or business partner in violation of Edunary’s policies;
-- An instructor uses the Services in a way that creates unfair competition, such as advertising their business outside of our site in violation of Edunary’s policies; or
-- As determined by Edunary in its sole discretion.
+An instructor or content violates our policies or legal terms (including the Terms of Use);
+
+Content does not meet our quality standards or negatively impacts the student experience;
+
+An instructor engages in behavior that reflects poorly on Edunary or exposes Edunary to public disgrace, contempt, scandal, or ridicule;
+
+An instructor uses the services of another marketer or business partner in violation of Edunary’s policies;
+
+An instructor uses the Services in a way that creates unfair competition, such as advertising their business outside of our site in violation of Edunary’s policies; or
+
+As determined by Edunary in its sole discretion.
 
 3.2 Co-Instructors and Teaching Assistants
 The Edunary platform allows you to add other users as co-instructors or teaching assistants for your Submitted Content that you manage and you must comply with our Co-Instructor and Teaching Assistant Relationship Guidelines when taking such actions. By adding a co-instructor or teaching assistant, you understand that you are authorizing them to take certain actions that will affect your Edunary account and Submitted Content. Any violation of Edunary’s terms and policies by your co-instructor or teaching assistant may also impact your Edunary account and Submitted Content. Edunary cannot advise on disputes or resolve disagreements between you and those users. If your co-instructor is assigned a revenue share, their share will be paid from your earned revenue share based on the rates you specified in the Course Management settings as of the date of purchase.
@@ -58,7 +74,7 @@ Instructors do not have a direct contractual relationship with students, therefo
 3.4 Anti-Copyright Infringement Efforts
 We work with anti-copyright infringement service providers to help protect your content from unauthorized use. To activate this protection, you hereby designate Edunary and our anti-copyright infringement service providers as your agents for the purpose of enforcing copyright in and to your content, through notice and takedown procedures (under applicable copyright law such as the Digital Millennium Copyright Act) and other efforts to enforce those rights. You grant Edunary and our anti-copyright infringement service providers the primary rights to act on your behalf to issue takedown notices for the enforcement of your copyright rights.
 
-You agree that Edunary and our anti-copyright infringement service providers will maintain these rights unless you revoke them by emailing takedowns@udemy.com with the subject line: "Revoke Anti-Piracy Protection Rights" from the email address associated with your account. Revocation requests will be effective 48 hours after we receive them.
+You agree that Edunary and our anti-copyright infringement service providers will maintain these rights unless you revoke them by emailing takedowns@edunary.com with the subject line: "Revoke Anti-Piracy Protection Rights" from the email address associated with your account. Revocation requests will be effective 48 hours after we receive them.
 
 4. Pricing
 4.1 Opportunities for Instructors
@@ -102,7 +118,7 @@ If a student applies your coupon code or referral link at checkout, your revenue
 5.3 Receiving Payments
 In order for us to pay you in a timely manner, you must maintain a valid PayPal, Payoneer, or bank account (available in certain countries) in good standing and must update us with the email associated with your account. You must also provide any required tax identification or documentation (e.g., W-9 or W-8 forms) necessary to receive the payment due to you and you agree that we have the right to withhold appropriate taxes from your payments. We reserve the right to withhold payments or impose other penalties if we do not receive appropriate tax identification or documentation from you. You understand and agree that you are solely responsible for any taxes related to your income.
 
-Any tax forms, such as 1099 and 1042-S forms, will be provided to you electronically and you consent to the electronic delivery of such tax forms. Tax forms will be available in the "Payment & Tax Settings" page of your instructor account for at least three years, but this time frame may change in the future. You may revoke this consent at any time by emailing instructorsupport@udemy.com with the subject line: “Revoke Electronic Delivery Consent” from the email associated with your Edunary account. If you do not consent to electronic filing, we will send a paper copy of your tax form by mail. Your consent to electronic filing will remain in effect until revoked. The documents will be provided in PDF format. To participate in the electronic filing service, you must have a valid Edunary account, internet access, and the ability to access, download, and print PDF files using a PDF reader such as Adobe® Reader®. Additional information on accessing your tax forms is available in our Help Center article.
+Any tax forms, such as 1099 and 1042-S forms, will be provided to you electronically and you consent to the electronic delivery of such tax forms. Tax forms will be available in the "Payment & Tax Settings" page of your instructor account for at least three years, but this time frame may change in the future. You may revoke this consent at any time by emailing instructorsupport@edunary.com with the subject line: “Revoke Electronic Delivery Consent” from the email associated with your Edunary account. If you do not consent to electronic filing, we will send a paper copy of your tax form by mail. Your consent to electronic filing will remain in effect until revoked. The documents will be provided in PDF format. To participate in the electronic filing service, you must have a valid Edunary account, internet access, and the ability to access, download, and print PDF files using a PDF reader such as Adobe® Reader®. Additional information on accessing your tax forms is available in our Help Center article.
 
 Depending on the applicable revenue share model, payment will be made within 45 days after the end of the month in which (a) we receive payment for a course or, for Coaching Services, a completed session; or (b) the related course usage occurs, provided that the amount due to you is at least $25 USD. If the amount due to you is less than $25 USD, we will withhold payment and issue it when your accumulated payable amount reaches $25 USD or at the end of the calendar year in which the amount was earned, whichever comes first.
 
@@ -150,15 +166,19 @@ While you are an instructor publishing and adhering to the requirements below, y
 
 You must:
 
-- Only use the brand assets we provide to you, as detailed in any guidelines we may publish;
-- Only use our brands in connection with the advertising and sale of your Submitted Content available on Edunary or your participation on Edunary; and
-- Immediately comply if we request that you cease any such use.
+Only use the brand assets we provide to you, as detailed in any guidelines we may publish;
+
+Only use our brands in connection with the advertising and sale of your Submitted Content available on Edunary or your participation on Edunary; and
+
+Immediately comply if we request that you cease any such use.
 
 You must not:
 
-- Use our brand in a misleading or damaging way;
-- Use our brand in a way that implies we endorse, sponsor, or approve your Submitted Content or services; or
-- Use our brand in a way that violates any applicable laws or in connection with subject matter or materials that are obscene, indecent, or illegal.
+Use our brand in a misleading or damaging way;
+
+Use our brand in a way that implies we endorse, sponsor, or approve your Submitted Content or services; or
+
+Use our brand in a way that violates any applicable laws or in connection with subject matter or materials that are obscene, indecent, or illegal.
 
 8. Deleting Your Account
 You can learn how to delete your instructor account here. We will use commercially reasonable efforts to pay any outstanding scheduled payments to you before deleting your account. You understand that if students have previously enrolled in your Submitted Content, they may still have access to your name and that Submitted Content after your account is deleted. If you need assistance or encounter any issues with deleting your account, you can contact us through our Help Center.

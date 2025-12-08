@@ -1,7 +1,7 @@
 import argparse
 from .get_embedding_function import get_embedding_function
 from langchain_chroma import Chroma
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import OllamaLLM
 from app.models.llm_config import llm
 

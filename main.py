@@ -47,3 +47,5 @@ if __name__ == "__main__":
 # Chat interface: http://127.0.0.1:8000/
 # API docs: http://127.0.0.1:8000/docs
 # API chat: http://127.0.0.1:8000/api/chat/
+# conda deactivate
+# & "D:\tailieu4\HK1-25-26\New Technology\Demo\AI Backend\chatbot\Scripts\Activate.ps1"

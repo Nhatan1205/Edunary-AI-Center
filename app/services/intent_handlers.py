@@ -1,5 +1,5 @@
 from app.services.query_data import query_rag
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 from app.models.llm_config import llm
 import requests
 import json
@@ -60,76 +60,170 @@ Conversation:
 User: {input}
 """)
 
+entity_search_prompt = PromptTemplate.from_template("""
+You are an Entity Extraction System for an education platform.
+Your goal is to identify the core **Subject** or **Topic** the user wants to learn.
 
+INSTRUCTIONS:
+1. Analyze the user's input to find the main keyword (Technology, Skill, or Instructor name).
+2. Ignore stop words like "I want to learn", "course", "tutorial", "best", "online".
+3. Return the result in valid JSON format with a single key "topic".
+4. If no specific topic is found (e.g., user says "hello"), return "topic": null.
 
-summary_prompt = PromptTemplate.from_template("""
-You are an assistant that answers questions about online courses on the Edunary e-learning platform.  
+EXAMPLES:
+Input: "I want to find a Python course for beginners"
+Output: {{ "topic": "Python" }}
+
+Input: "Show me courses about Digital Marketing"
+Output: {{ "topic": "Digital Marketing" }}
+
+Input: "Do you have any ReactJS tutorials?"
+Output: {{ "topic": "ReactJS" }}
+
+Input: "Courses by Le Van Vinh"
+Output: {{ "topic": "Le Van Vinh" }}
 
 Conversation:
 {chat_history}
-User (most recent): {input}
+User: {input}
 
-Here is the raw course data (JSON):
-{courses_json}
-
-Instructions:
-- Provide a clear, natural, and concise response.  
-- Carefully read the user's most recent question and answer it using only the relevant information from the platform data. Do not write any words relate to "platform" or "backend"  
-- If the question is broad or general, you may provide a more complete summary of the course (title, description, duration, category, level, price, instructor).  
-- Always make sure the response directly addresses the user's intent, without adding unrelated details.
+Output JSON:
 """)
 
-def handle_greeting(message: str) -> str:
-    return "Hi! Nice to meet you 👋"
+summary_prompt = PromptTemplate.from_template("""
+You are a helpful academic assistant for Edunary.
+The user asked: "{input}"
 
-def handle_faq(message: str) -> str:
-    return query_rag(message)
+Here is the list of courses found in the database (JSON format):
+{courses_json}
 
-# def handle_get_course_info(message: str, history: str) -> str:
-#     # Extract entities
-#     entities_result = (entity_prompt | llm).invoke({"chat_history": history, "input": message})
-#     # Handle both string (OllamaLLM) and AIMessage (ChatOpenAI, ChatGoogleGenerativeAI)
-#     entities_str = (entities_result.content if hasattr(entities_result, 'content') else entities_result).strip()
+INSTRUCTIONS:
+- If the list is empty, apologize and suggest user to try another keyword.
+- If courses are found, summarize them naturally (Title, Instructor, Price).
+- Do NOT list JSON raw data.
+- Do NOT mention "backend", "API", or "database".
+- Be concise and encouraging.
+""")
 
-#     # Clean markdown code blocks from JSON response
-#     entities_str_clean = clean_json_response(entities_str)
+def handle_greeting(message: str) -> dict:
+    return {
+        "reply": "Hi! Nice to meet you 👋 How can I help you find the perfect course today?",
+        "messageType": "text",
+        "courses": None
+    }
 
-#     try:
-#         entities = json.loads(entities_str_clean)
+def handle_faq(message: str) -> dict:
+    text_reply = query_rag(message)
+    return {
+        "reply": text_reply,
+        "messageType": "faq",
+        "courses": None
+    }
+
+def handle_get_course_info(message: str, history: str) -> dict:
+    topic = ""
+    try:
+        raw_result = (entity_search_prompt | llm).invoke({"chat_history": history, "input": message})
         
-#     except json.JSONDecodeError as e:
-#         return "Sorry, I couldn't extract any course information. Could you rephrase your question?"
+        result_content = raw_result.content if hasattr(raw_result, 'content') else raw_result
+        clean_json = clean_json_response(result_content)
+        
+        entity_data = json.loads(clean_json)
+        topic = entity_data.get("topic", "")
+        
+        if not topic:
+            return {
+                "reply": "I am not sure which topic you are looking for. Could you please specify a subject (e.g., Python, Marketing, Web Development)?",
+                "messageType": "text",
+                "courses": None
+            }
 
-#     # Filter out invalid fields (remove "none", "null", empty lists)
-#     valid_entities = {}
-#     for k, v in entities.items():
-#         if isinstance(v, list):
-#             clean_list = [item for item in v if item not in ["none", "null", "", '']]
-#             if clean_list:
-#                 valid_entities[k] = clean_list
-#         elif v not in [None, "none", "null", "", '']:
-#             valid_entities[k] = v
+    except json.JSONDecodeError:
+        return {
+            "reply": "Sorry, the system is busy. Please try again later.",
+            "messageType": "text",
+            "courses": None
+        }
+    except Exception:
+        return {
+            "reply": "An error occurred while processing your request.",
+            "messageType": "text",
+            "courses": None
+        }
+
+    api_url = "https://edunary.runasp.net/api/Courses/search"
     
+    payload = {
+        "searchText": topic,
+        "pageNumber": 1,
+        "pageSize": 5,
+        "sortBy": 0,
+        "filterData": []
+    }
+    try:
+        response = requests.post(api_url, json=payload)
+        
+        if response.status_code == 200:
+            data = response.json()
+            items = data.get("items", [])
+            
+            if not items:
+                return {
+                    "reply": f"I searched for '{topic}' but could not find any matching courses. Try searching for 'Python', 'Marketing', or 'Design'.",
+                    "messageType": "text",
+                    "courses": None
+                }
 
-#     # Fallback if no valid entities
-#     if not valid_entities:
-#         return "Sorry, I couldn't find any course information from your message. Please ask about a course."
+            # Prepare data for LLM summary (all courses)
+            simplified_courses = []
+            for item in items:
+                simplified_courses.append({
+                    "title": item.get("title"),
+                    "instructor": item.get("instructorName"),
+                    "price": item.get("price")
+                })
+            
+            courses_str = json.dumps(simplified_courses, ensure_ascii=False)
+            
+            # Generate summary using LLM
+            summary_res = (summary_prompt | llm).invoke({
+                "chat_history": history, 
+                "input": message, 
+                "courses_json": courses_str
+            })
+            
+            summary_text = (summary_res.content if hasattr(summary_res, 'content') else summary_res).strip()
+            
+            # Build simplified course card for ONLY the first course
+            first_item = items[0]
+            course_card = {
+                "id": first_item.get("id"),
+                "title": first_item.get("title", "Untitled Course"),
+                "subtitle": first_item.get("subtitle"),
+                "imageUrl": first_item.get("imageUrl"),
+                "instructorName": first_item.get("instructorName", "Unknown"),
+                "courseUrl": f"https://edunary.runasp.net/course/{first_item.get('id')}"
+            }
+            
+            return {
+                "reply": summary_text,
+                "messageType": "course_cards",
+                "courses": [course_card]  # Only first course
+            }
+            
+        else:
+            return {
+                "reply": "Sorry, I cannot connect to the course database right now.",
+                "messageType": "text",
+                "courses": None
+            }
 
-#     # Call backend API with only valid entities
-#     try:
-#         response = requests.get("http://localhost:5000/course/search", json=valid_entities)
-#         response.raise_for_status()
-#         # parse response JSON
-#         api_response = response.json()
-#         courses_str = json.dumps(api_response, ensure_ascii=False)
-
-#         # let LLM summarize
-#         summary_result = (summary_prompt | llm).invoke({"chat_history": history, "input": message, "courses_json": courses_str})
-#         # Handle both string (OllamaLLM) and AIMessage (ChatOpenAI, ChatGoogleGenerativeAI)
-#         summary = (summary_result.content if hasattr(summary_result, 'content') else summary_result).strip()
-#         return summary
-#     except requests.RequestException as e:
-#         return "Sorry, I failed to fetch course information."
+    except requests.RequestException:
+        return {
+            "reply": "The system is currently undergoing maintenance. Please check back later.",
+            "messageType": "text",
+            "courses": None
+        }
 
 def handle_default(message: str) -> str:
-    return None  # để fallback sang chatbot LLM
+    return None
