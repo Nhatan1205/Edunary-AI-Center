@@ -51,7 +51,6 @@ def _extract_topic(message: str, history: str) -> str | None:
     entity_data = json.loads(clean_json)
     topic = entity_data.get("topic", "")
 
-    logger.info(f"Extracted topic: '{topic}'")
     return topic if topic else None
 
 
@@ -86,15 +85,18 @@ def handle_course_search(message: str, history: str) -> dict:
     # Step 1: Extract topic
     try:
         topic = _extract_topic(message, history)
+        logger.info(f"Extracted topic: '{topic}'")
 
         if not topic:
+            logger.warning("Topic is empty — returning early, API not called")
             return {
                 "reply": "I am not sure which topic you are looking for. Could you please specify a subject (e.g., Python, Marketing, Web Development)?",
                 "messageType": "text",
                 "courses": None,
             }
 
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON parse error extracting topic: {e}")
         return {
             "reply": "Sorry, the system is busy. Please try again later.",
             "messageType": "text",

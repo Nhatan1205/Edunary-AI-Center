@@ -4,6 +4,8 @@ Structured logging setup for the Edunary AI Center.
 
 import logging
 import sys
+import time
+from contextlib import contextmanager
 
 
 def setup_logging(debug: bool = False) -> None:
@@ -26,3 +28,15 @@ def setup_logging(debug: bool = False) -> None:
 def get_logger(name: str) -> logging.Logger:
     """Get a named logger instance."""
     return logging.getLogger(name)
+
+
+_timer_logger = logging.getLogger("timer")
+
+
+@contextmanager
+def timer(label: str):
+    """Log execution time of a block. Usage: `with timer("label"): ...`"""
+    start = time.perf_counter()
+    yield
+    elapsed = time.perf_counter() - start
+    _timer_logger.info(f"⏱  {label}: {elapsed:.2f}s")

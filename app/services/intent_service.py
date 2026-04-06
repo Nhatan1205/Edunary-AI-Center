@@ -31,5 +31,5 @@ def classify_intent(message: str, history_text: str) -> str:
     raw = intent_result.content if hasattr(intent_result, "content") else intent_result
     intent = raw.strip().lower()
 
-    logger.info(f"Intent classified: '{intent}' for message: '{message[:50]}...'")
+    logger.info(f"Intent: '{intent}'")
     return intent

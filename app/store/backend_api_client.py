@@ -52,7 +52,7 @@ class BackendAPIClient:
         }
 
         try:
-            logger.info(f"Searching courses: topic='{search_text}'")
+            logger.info(f"POST {url} | search_text='{search_text}'")
             response = requests.post(url, json=payload, timeout=self.timeout)
 
             if response.status_code == 200:

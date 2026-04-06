@@ -53,35 +53,25 @@ Intent:
 # Extracts the main topic/subject from user input for course search.
 # Originally in intent_handlers.py
 
-ENTITY_SEARCH_PROMPT = PromptTemplate.from_template("""
-You are an Entity Extraction System for an education platform.
-Your goal is to identify the core **Subject** or **Topic** the user wants to learn.
+ENTITY_SEARCH_PROMPT = PromptTemplate.from_template("""Extract the main learning topic from the user's message.
 
-INSTRUCTIONS:
-1. Analyze the user's input to find the main keyword (Technology, Skill, or Instructor name).
-2. Ignore stop words like "I want to learn", "course", "tutorial", "best", "online".
-3. Return the result in valid JSON format with a single key "topic".
-4. If no specific topic is found (e.g., user says "hello"), return "topic": null.
+Rules:
+- Return ONLY a raw JSON object, nothing else.
+- Do NOT add markdown, code blocks, backticks, explanation, or any extra text.
+- Use exactly this format: {{"topic": "value"}} or {{"topic": null}}
+- "topic" is the main subject/technology/skill the user wants to learn.
+- Ignore words like: learn, course, tutorial, find, show, best, online.
+- If no specific topic found, use null.
 
-EXAMPLES:
-Input: "I want to find a Python course for beginners"
-Output: {{ "topic": "Python" }}
+Examples:
+User: "I want to find a Python course" → {{"topic": "Python"}}
+User: "Show me courses about Digital Marketing" → {{"topic": "Digital Marketing"}}
+User: "suggest me some courses about aws" → {{"topic": "aws"}}
+User: "hello" → {{"topic": null}}
 
-Input: "Show me courses about Digital Marketing"
-Output: {{ "topic": "Digital Marketing" }}
-
-Input: "Do you have any ReactJS tutorials?"
-Output: {{ "topic": "ReactJS" }}
-
-Input: "Courses by Le Van Vinh"
-Output: {{ "topic": "Le Van Vinh" }}
-
-Conversation:
-{chat_history}
 User: {input}
 
-Output JSON:
-""")
+JSON:""")
 
 
 # === Course Summary ===

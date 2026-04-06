@@ -1,8 +1,8 @@
 """
 Chat history store — MongoDB-backed conversation persistence.
-Refactored from services/context_services.py.
 """
 
+from pymongo import MongoClient
 from langchain_mongodb import MongoDBChatMessageHistory
 from langchain_core.messages import messages_to_dict
 
@@ -11,41 +11,29 @@ from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
+# Create MongoClient at startup — reused across all requests
+_settings = get_settings()
+_mongo_client = MongoClient(_settings.MONGO_URI)
+logger.info("MongoDB client initialized")
+
 
 def _get_history_object(session_id: str) -> MongoDBChatMessageHistory:
-    """Create a MongoDBChatMessageHistory object for the given session."""
-    settings = get_settings()
     return MongoDBChatMessageHistory(
         session_id=session_id,
-        connection_string=settings.MONGO_URI,
-        database_name=settings.MONGO_DB_NAME,
-        collection_name=settings.MONGO_COLLECTION_NAME,
+        connection_string="",
+        client=_mongo_client,
+        database_name=_settings.MONGO_DB_NAME,
+        collection_name=_settings.MONGO_COLLECTION_NAME,
     )
 
 
 def get_session_history(session_id: str) -> list[dict]:
-    """
-    Get the entire conversation history as a list of dicts.
-
-    Returns:
-        list[dict]: Each dict has 'type' ('human'/'ai') and 'data' with 'content'.
-    """
     history = _get_history_object(session_id)
-    messages = history.messages
-    return messages_to_dict(messages)
+    return messages_to_dict(history.messages)
 
 
 def save_message(session_id: str, role: str, message: str) -> None:
-    """
-    Save a message to MongoDB.
-
-    Args:
-        session_id: Chat session identifier.
-        role: Either 'user' or 'assistant'.
-        message: Message content.
-    """
     history = _get_history_object(session_id)
-
     if role == "user":
         history.add_user_message(message)
     elif role == "assistant":

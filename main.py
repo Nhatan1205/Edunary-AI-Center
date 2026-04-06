@@ -13,13 +13,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.core.exceptions import EdunaryAIException
 from app.core.logging import setup_logging, get_logger
-from app.controllers.chat_controller import router as chat_router
-from app.controllers.websocket_controller import router as ws_router
 
-# Load settings and setup logging
+# Setup logging FIRST — before any other imports that may log at module level
 settings = get_settings()
 setup_logging(debug=settings.DEBUG)
 logger = get_logger(__name__)
+
+# Controllers imported AFTER logging is ready
+from app.controllers.chat_controller import router as chat_router
+from app.controllers.websocket_controller import router as ws_router
 
 # Create FastAPI app
 app = FastAPI(
