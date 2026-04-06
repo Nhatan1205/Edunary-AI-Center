@@ -1,0 +1,77 @@
+from pydantic_settings import BaseSettings
+from functools import lru_cache
+
+
+class Settings(BaseSettings):
+    """
+    Application settings loaded from .env file.
+    All environment variables are centralized here.
+    """
+
+    # === App ===
+    APP_TITLE: str = "Edunary AI Center"
+    APP_VERSION: str = "1.0.0"
+    DEBUG: bool = False
+    CORS_ORIGINS: list[str] = ["*"]
+
+    # === LLM ===
+    LLM_PROVIDER: str = "gemini"  # gemini | huggingface | ollama | custom
+    LLM_TEMPERATURE: float = 0.7
+    LLM_MAX_TOKENS: int = 512
+
+    # Gemini
+    GOOGLE_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+
+    # HuggingFace
+    HF_TOKEN: str = ""
+    HUGGINGFACE_MODEL: str = "meta-llama/Llama-3.1-8B-Instruct"
+
+    # Ollama
+    OLLAMA_MODEL: str = "llama3.1"
+
+    # Custom OpenAI-compatible API
+    CUSTOM_LLM_BASE_URL: str = ""
+    CUSTOM_LLM_API_KEY: str = ""
+    CUSTOM_LLM_MODEL: str = ""
+
+    # === Embedding ===
+    EMBEDDING_PROVIDER: str = "huggingface"  # ollama | openai | huggingface | google
+    HUGGINGFACE_EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
+    OPENAI_API_KEY: str = ""
+    OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
+    GOOGLE_EMBEDDING_MODEL: str = "models/embedding-001"
+    OLLAMA_EMBEDDING_MODEL: str = "nomic-embed-text"
+
+    # === Vector Store (ChromaDB) ===
+    CHROMA_PATH: str = "chroma"
+    CHROMA_COLLECTION: str = "test_document"
+    DOCUMENTS_PATH: str = "document/edunary"
+
+    # === MongoDB (Chat History) ===
+    MONGO_URI: str = ""
+    MONGO_DB_NAME: str = "chatbot"
+    MONGO_COLLECTION_NAME: str = "chat_sessions"
+
+    # === Edunary Backend API ===
+    BACKEND_API_BASE_URL: str = "https://edunary.runasp.net"
+    BACKEND_API_TIMEOUT: int = 30
+
+    # === Auth ===
+    JWT_SECRET_KEY: str = ""
+    JWT_ALGORITHM: str = "HS256"
+    AUTH_ENABLED: bool = False  # false = skip auth (dev mode)
+
+    # === Cloudflare Worker ===
+    CF_WORKER_URL: str = ""
+    CF_API_KEY: str = ""
+
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
+
+@lru_cache()
+def get_settings() -> Settings:
+    """Return cached Settings singleton."""
+    return Settings()

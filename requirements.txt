@@ -1,19 +1,33 @@
+# Web Framework
 fastapi
-uvicorn
-langchain
-langchain-openai
-python-dotenv
-unstructured
-chromadb
-langchain-ollama
-langchain-chroma
-langchain_community
-requests
-langchain_mongodb
+uvicorn[standard]
 jinja2
 python-multipart
-websockets
+
+# LLM & AI
+langchain
+langchain-core
+langchain-openai
+langchain-ollama
 langchain-google-genai
 langchain-huggingface
 sentence-transformers
-langchain-openai
+
+# Vector Store
+chromadb
+langchain-chroma
+
+# Document Processing
+unstructured
+langchain-community
+
+# Data Stores
+langchain-mongodb
+requests
+
+# Configuration
+python-dotenv
+pydantic-settings
+
+# Auth (for future JWT verification)
+python-jose[cryptography]
