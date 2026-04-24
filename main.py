@@ -1,51 +1,119 @@
+"""
+Edunary AI Center — FastAPI Application Entry Point.
+
+This is the main entry point for the application.
+It registers middleware, exception handlers, and all controllers (routers).
+"""
+
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
-from app.routes import chat
-from app.routes import websocket_chat
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.core.config import get_settings
+from app.core.exceptions import EdunaryAIException
+from app.core.logging import setup_logging, get_logger
+
+# Setup logging FIRST — before any other imports that may log at module level
+settings = get_settings()
+setup_logging(debug=settings.DEBUG)
+logger = get_logger(__name__)
+
+# Controllers imported AFTER logging is ready
+from app.controllers.chat_controller import router as chat_router
+from app.controllers.websocket_controller import router as ws_router
+
+# Create FastAPI app
 app = FastAPI(
-    title="AI Chatbot API",
-    description="AI-powered chatbot with web interface",
-    version="1.0.0"
+    title=settings.APP_TITLE,
+    version=settings.APP_VERSION,
+    description="Edunary AI Center — Chatbot, Roadmap Generator, Quiz Creator",
 )
 
 # Setup templates
 templates = Jinja2Templates(directory="app/templates")
 
-# Add CORS middleware
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your frontend domain
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include existing API routes
-app.include_router(chat.router, prefix="/api")
 
-# Include WebSocket routes
-app.include_router(websocket_chat.router)
+# === Global Exception Handler ===
+@app.exception_handler(EdunaryAIException)
+async def edunary_exception_handler(request: Request, exc: EdunaryAIException):
+    """Handle all custom Edunary exceptions."""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"success": False, "message": exc.message},
+    )
 
+
+# === Register Controllers ===
+app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
+app.include_router(ws_router, tags=["WebSocket"])
+# [FUTURE] app.include_router(roadmap_router, prefix="/api/roadmap", tags=["Roadmap"])
+# [FUTURE] app.include_router(quiz_router, prefix="/api/quiz", tags=["Quiz"])
+
+
+# === Health Check ===
+@app.get("/health")
+async def health_check():
+    """Health check endpoint — returns app version and current LLM configuration."""
+    provider = settings.LLM_PROVIDER.lower()
+
+    # Determine which model name is active based on provider
+    model_map = {
+        "gemini": settings.GEMINI_MODEL,
+        "huggingface": settings.HUGGINGFACE_MODEL,
+        "ollama": settings.OLLAMA_MODEL,
+        "custom": settings.CUSTOM_LLM_MODEL or "custom",
+    }
+
+    return {
+        "status": "ok",
+        "version": settings.APP_VERSION,
+        "llm": {
+            "provider": provider,
+            "model": model_map.get(provider, "unknown"),
+        },
+        "embedding": {
+            "provider": settings.EMBEDDING_PROVIDER,
+        },
+        "auth_enabled": settings.AUTH_ENABLED,
+    }
+
+
+# === Demo HTML Routes ===
 @app.get("/", response_class=HTMLResponse)
 async def get_chat_interface(request: Request):
-    """Serve the chat interface"""
-    return templates.TemplateResponse("chat_new.html", {"request": request})
+    """Serve the chat interface."""
+    return templates.TemplateResponse(
+        request=request,
+        name="chat_new.html",
+    )
+
 
 @app.get("/embed", response_class=HTMLResponse)
 async def get_embeddable_chat(request: Request):
-    """Serve embeddable chat interface for iframe"""
-    return templates.TemplateResponse("chat_new.html", {"request": request})
+    """Serve embeddable chat interface for iframe."""
+    return templates.TemplateResponse(
+        request=request,
+        name="chat_new.html",
+    )
+
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 # uvicorn main:app --reload
 # Chat interface: http://127.0.0.1:8000/
 # API docs: http://127.0.0.1:8000/docs
 # API chat: http://127.0.0.1:8000/api/chat/
-# conda deactivate
-# & "D:\tailieu4\HK1-25-26\New Technology\Demo\AI Backend\chatbot\Scripts\Activate.ps1"
+# Health: http://127.0.0.1:8000/health
