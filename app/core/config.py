@@ -61,6 +61,7 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = ""
     JWT_ALGORITHM: str = "HS256"
     AUTH_ENABLED: bool = False  # false = skip auth (dev mode)
+    AI_CENTER_API_KEY: str = ""  # Static API key for .NET backend → AI Center calls
 
     # === Cloudflare Worker ===
     CF_WORKER_URL: str = ""

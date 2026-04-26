@@ -22,6 +22,7 @@ logger = get_logger(__name__)
 # Controllers imported AFTER logging is ready
 from app.controllers.chat_controller import router as chat_router
 from app.controllers.websocket_controller import router as ws_router
+from app.controllers.roadmap_controller import router as roadmap_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -56,7 +57,7 @@ async def edunary_exception_handler(request: Request, exc: EdunaryAIException):
 # === Register Controllers ===
 app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
 app.include_router(ws_router, tags=["WebSocket"])
-# [FUTURE] app.include_router(roadmap_router, prefix="/api/roadmap", tags=["Roadmap"])
+app.include_router(roadmap_router, prefix="/api/roadmap", tags=["Roadmap"])
 # [FUTURE] app.include_router(quiz_router, prefix="/api/quiz", tags=["Quiz"])
 
 
