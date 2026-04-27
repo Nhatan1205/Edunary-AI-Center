@@ -37,7 +37,10 @@ templates = Jinja2Templates(directory="app/templates")
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=[
+        "https://localhost:44447",
+        "https://edunary.runasp.net"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

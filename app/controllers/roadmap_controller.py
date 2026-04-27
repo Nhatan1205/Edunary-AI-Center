@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import Optional
 
-from app.auth.api_key import verify_api_key
+from app.auth.dependencies import verify_request
 from app.schemas.model_config import ModelConfig
 from app.schemas.common import APIResponse
 from app.services.roadmap_service import generate_roadmap
@@ -19,7 +19,7 @@ from app.core.logging import get_logger
 logger = get_logger(__name__)
 
 # All routes in this router require X-API-Key authentication
-router = APIRouter(dependencies=[Depends(verify_api_key)])
+router = APIRouter(dependencies=[Depends(verify_request)])
 
 
 class GenerateRoadmapRequest(BaseModel):

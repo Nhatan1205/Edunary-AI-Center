@@ -12,7 +12,6 @@ class Settings(BaseSettings):
     APP_TITLE: str = "Edunary AI Center"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
-    CORS_ORIGINS: list[str] = ["*"]
 
     # === LLM ===
     LLM_PROVIDER: str = "gemini"  # gemini | huggingface | ollama | custom

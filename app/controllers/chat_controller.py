@@ -10,12 +10,11 @@ from fastapi import APIRouter, HTTPException, Depends
 from app.schemas.chat_schema import ChatRequest, ChatResponse
 from app.services.chat_service import process_message
 from app.auth.dependencies import get_current_user
-from app.auth.api_key import verify_api_key
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
-router = APIRouter(dependencies=[Depends(verify_api_key)])
+router = APIRouter()
 
 
 @router.post("/", response_model=ChatResponse)
