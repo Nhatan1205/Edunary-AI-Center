@@ -12,7 +12,6 @@ class Settings(BaseSettings):
     APP_TITLE: str = "Edunary AI Center"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
-    CORS_ORIGINS: list[str] = ["*"]
 
     # === LLM ===
     LLM_PROVIDER: str = "gemini"  # gemini | huggingface | ollama | custom
@@ -61,6 +60,7 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = ""
     JWT_ALGORITHM: str = "HS256"
     AUTH_ENABLED: bool = False  # false = skip auth (dev mode)
+    AI_CENTER_API_KEY: str = ""  # Static API key for .NET backend → AI Center calls
 
     # === Cloudflare Worker ===
     CF_WORKER_URL: str = ""
