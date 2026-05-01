@@ -1,54 +1,39 @@
-"""
-Roadmap controller — AI roadmap generation endpoint.
-
-Called by the .NET backend (authenticated via X-API-Key).
-The backend provides the topic, level, and optional model_config
-(read from SystemSettings), so this endpoint never reads .env for LLM config.
-"""
-
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
-from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.auth.dependencies import verify_request
-from app.schemas.model_config import ModelConfig
-from app.schemas.common import APIResponse
-from app.services.roadmap_service import generate_roadmap
+from app.schemas.roadmap_schema import (
+    GeneratePersonalizedRoadmapRequest,
+    PersonalizedRoadmapResponse,
+)
 from app.core.logging import get_logger
+from app.services.roadmap_service import generate_roadmap
 
 logger = get_logger(__name__)
 
-# All routes in this router require X-API-Key authentication
 router = APIRouter(dependencies=[Depends(verify_request)])
 
 
-class GenerateRoadmapRequest(BaseModel):
-    """Request body sent by the .NET backend."""
+@router.post("/generate", response_model=PersonalizedRoadmapResponse)
+async def generate_personalized_roadmap_endpoint(
+    request: GeneratePersonalizedRoadmapRequest,
+):
+    profile = request.student_profile
+    logger.info(
+        f"Personalized roadmap request: topic='{request.roadmap_data.roadmap_topic}', "
+        f"level='{profile.skill_level}', catalog_size={len(request.courses_catalog)}"
+    )
 
-    topic: str
-    level: str = "Beginner"  # Beginner | Intermediate | Advanced | AllLevel
-    llm_config: Optional[ModelConfig] = None  # Renamed from model_config — Pydantic V2 reserves that name
+    try:
+        roadmap_data = generate_roadmap(request)
+    except ValueError as e:
+        logger.error(f"Personalized roadmap generation failed (schema/JSON): {e}")
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        logger.error(f"Personalized roadmap generation failed (unexpected): {e}")
+        raise HTTPException(status_code=500, detail="Internal AI error")
 
-
-@router.post("/generate", response_model=APIResponse)
-async def roadmap_endpoint(request: GenerateRoadmapRequest):
-    """
-    Generate an AI learning roadmap for a given topic and level.
-
-    Returns a graph structure with nodes (learning topics) and edges (prerequisites).
-    Nodes contain label + description rather than real CourseIds — the .NET backend
-    or frontend can later map each node to an actual course in the DB.
-
-    Auth: X-API-Key header (set AUTH_ENABLED=true in production).
-    """
-    logger.info(f"Generating roadmap: topic='{request.topic}', level='{request.level}'")
-
-    llm_config_dict = request.llm_config.model_dump() if request.llm_config else None
-
-    data = generate_roadmap(topic=request.topic,level=request.level,model_config=llm_config_dict)
-
-    return APIResponse(
+    return PersonalizedRoadmapResponse(
         success=True,
-        message="Roadmap generated successfully",
-        data=data,
+        data=roadmap_data,
+        message="Personalized roadmap generated successfully",
     )

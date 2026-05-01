@@ -82,10 +82,10 @@ async def verify_request(request: Request, x_timestamp: str = Header(None), x_si
     secret = settings.AI_CENTER_API_KEY.encode()
     expected = hmac.new(secret, message.encode(), hashlib.sha256).hexdigest()
 
-    print(f"Body hash: {body_hash}")
-    print(f"Message: {message}")
-    print(f"Expected: {expected}")
-    print(f"Received: {x_signature}")
+    # print(f"Body hash: {body_hash}")
+    # print(f"Message: {message}")
+    # print(f"Expected: {expected}")
+    # print(f"Received: {x_signature}")
 
     # 4. Constant-time compare
     if not hmac.compare_digest(expected, x_signature.lower()):
