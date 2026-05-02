@@ -3,6 +3,8 @@ FAQ service — handles FAQ queries using RAG (Retrieval-Augmented Generation).
 Extracted from intent_handlers.py: handle_faq() and query_data.py: query_rag().
 """
 
+import time
+
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.prompts.faq_prompts import FAQ_RAG_PROMPT
@@ -24,7 +26,9 @@ def query_rag(query_text: str) -> str:
         str: The LLM-generated answer based on retrieved context.
     """
     # Search vector store
+    # _t0 = time.perf_counter()
     results = similarity_search(query_text, k=5)
+    # logger.info(f"similarity_search took {time.perf_counter() - _t0:.3f}s")
 
     # Combine all chunks into context
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])

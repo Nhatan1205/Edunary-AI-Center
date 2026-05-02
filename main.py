@@ -23,6 +23,9 @@ logger = get_logger(__name__)
 from app.controllers.chat_controller import router as chat_router
 from app.controllers.websocket_controller import router as ws_router
 from app.controllers.roadmap_controller import router as roadmap_router
+from app.controllers.rag_controller import router as rag_router
+from app.controllers.qdrant_dashboard_controller import router as qdrant_dashboard_router
+from app.controllers.course_embedding_controller import router as course_embedding_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -61,6 +64,9 @@ async def edunary_exception_handler(request: Request, exc: EdunaryAIException):
 app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
 app.include_router(ws_router, tags=["WebSocket"])
 app.include_router(roadmap_router, prefix="/api/roadmap", tags=["Roadmap"])
+app.include_router(rag_router, prefix="/api/rag", tags=["RAG"])
+app.include_router(qdrant_dashboard_router, prefix="/api/qdrant", tags=["Qdrant Dashboard"])
+app.include_router(course_embedding_router, prefix="/api/course-embeddings", tags=["Course Embeddings"])
 # [FUTURE] app.include_router(quiz_router, prefix="/api/quiz", tags=["Quiz"])
 
 
@@ -87,6 +93,11 @@ async def health_check():
         },
         "embedding": {
             "provider": settings.EMBEDDING_PROVIDER,
+        },
+        "vector_store": {
+            "provider": "qdrant",
+            "url": settings.QDRANT_URL,
+            "collection": settings.QDRANT_COLLECTION,
         },
         "auth_enabled": settings.AUTH_ENABLED,
     }
@@ -121,3 +132,5 @@ if __name__ == "__main__":
 # API docs: http://127.0.0.1:8000/docs
 # API chat: http://127.0.0.1:8000/api/chat/
 # Health: http://127.0.0.1:8000/health
+# & "D:\tailieu4\HK1-25-26\New Technology\Demo\AI Backend\chatbot\Scripts\Activate.ps1"
+# python -m app.store.document_loader
