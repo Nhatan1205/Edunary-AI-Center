@@ -1,7 +1,11 @@
 """
 Course search service.
-Handles entity extraction, backend API search, and LLM summarization.
-Extracted from intent_handlers.py: handle_get_course_info().
+Handles entity extraction from user message, vector similarity search via Qdrant,
+and LLM summarization of results.
+
+Previously used BackendAPIClient.search_courses() (HTTP call to .NET backend).
+Now uses the edunary_courses Qdrant collection for semantic similarity search.
+BackendAPIClient is kept for potential future use.
 """
 
 import json
@@ -9,11 +13,14 @@ import re
 
 from app.prompts.chat_prompts import ENTITY_SEARCH_PROMPT, COURSE_SUMMARY_PROMPT
 from app.llm.factory import create_llm
-from app.store.backend_api_client import BackendAPIClient
 from app.core.logging import get_logger
-from app.core.exceptions import BackendAPIError
+from app.store.backend_api_client import BackendAPIClient  # kept for future use
+from app.services.course_embedding_service import search_courses
 
 logger = get_logger(__name__)
+
+# Maximum number of courses returned from vector search
+_SEARCH_LIMIT = 5
 
 
 def _clean_json_response(text: str) -> str:
@@ -21,8 +28,8 @@ def _clean_json_response(text: str) -> str:
     Clean JSON response from LLM by removing markdown code blocks.
 
     Handles formats like:
-    - ```json\n{...}\n```
-    - ```\n{...}\n```
+    - ```json\\n{...}\\n```
+    - ```\\n{...}\\n```
     - Just {...}
     """
     text = text.strip()
@@ -70,8 +77,8 @@ def _summarize_courses(message: str, history: str, courses_json: str) -> str:
 def handle_course_search(message: str, history: str) -> dict:
     """
     Full course search pipeline:
-    1. Extract topic from user message
-    2. Search courses via backend API
+    1. Extract topic from user message (LLM)
+    2. Search courses via Qdrant vector similarity (edunary_courses collection)
     3. Summarize results with LLM
     4. Return response dict with course cards
 
@@ -88,7 +95,7 @@ def handle_course_search(message: str, history: str) -> dict:
         logger.info(f"Extracted topic: '{topic}'")
 
         if not topic:
-            logger.warning("Topic is empty — returning early, API not called")
+            logger.warning("Topic is empty — returning early, Qdrant not queried")
             return {
                 "reply": "I am not sure which topic you are looking for. Could you please specify a subject (e.g., Python, Marketing, Web Development)?",
                 "messageType": "text",
@@ -109,40 +116,39 @@ def handle_course_search(message: str, history: str) -> dict:
             "courses": None,
         }
 
-    # Step 2: Search via backend API
+    # Step 2: Semantic search via Qdrant
     try:
-        client = BackendAPIClient()
-        data = client.search_courses(topic)
-        items = data.get("items", [])
+        results = search_courses(query=topic, limit=_SEARCH_LIMIT)
 
-        if not items:
+        if not results:
             return {
                 "reply": f"I searched for '{topic}' but could not find any matching courses. Try searching for 'Python', 'Marketing', or 'Design'.",
                 "messageType": "text",
                 "courses": None,
             }
 
-        # Step 3: Prepare data and summarize
-        simplified_courses = []
-        for item in items:
-            simplified_courses.append({
-                "title": item.get("title"),
-                "instructor": item.get("instructorName"),
-                "price": item.get("price"),
-            })
-
+        # Step 3: Prepare data for LLM summarization
+        simplified_courses = [
+            {
+                "title": r.title,
+                "instructor": r.instructor_name,
+                "price": r.price,
+            }
+            for r in results
+        ]
         courses_str = json.dumps(simplified_courses, ensure_ascii=False)
         summary_text = _summarize_courses(message, history, courses_str)
 
-        # Step 4: Build course card (first course only)
-        first_item = items[0]
+        # Step 4: Build course card from the top result
+        top = results[0]
+        backend_client = BackendAPIClient()
         course_card = {
-            "id": first_item.get("id"),
-            "title": first_item.get("title", "Untitled Course"),
-            "subtitle": first_item.get("subtitle"),
-            "imageUrl": first_item.get("imageUrl"),
-            "instructorName": first_item.get("instructorName", "Unknown"),
-            "courseUrl": client.get_course_url(first_item.get("id")),
+            "id": top.course_id,
+            "title": top.title,
+            "subtitle": top.subtitle,
+            "imageUrl": top.image_url,
+            "instructorName": top.instructor_name,
+            "courseUrl": backend_client.get_course_url(top.course_id),
         }
 
         return {
@@ -151,13 +157,8 @@ def handle_course_search(message: str, history: str) -> dict:
             "courses": [course_card],
         }
 
-    except BackendAPIError:
-        return {
-            "reply": "Sorry, I cannot connect to the course database right now.",
-            "messageType": "text",
-            "courses": None,
-        }
-    except Exception:
+    except Exception as e:
+        logger.error(f"Course search via Qdrant failed: {e}")
         return {
             "reply": "The system is currently undergoing maintenance. Please check back later.",
             "messageType": "text",

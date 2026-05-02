@@ -42,9 +42,10 @@ class Settings(BaseSettings):
     GOOGLE_EMBEDDING_MODEL: str = "models/embedding-001"
     OLLAMA_EMBEDDING_MODEL: str = "nomic-embed-text"
 
-    # === Vector Store (ChromaDB) ===
-    CHROMA_PATH: str = "chroma"
-    CHROMA_COLLECTION: str = "test_document"
+    # === Vector Store (Qdrant) ===
+    QDRANT_URL: str = "http://localhost:6333"  # or Qdrant Cloud URL
+    QDRANT_API_KEY: str = ""                    # leave empty for local Docker
+    QDRANT_COLLECTION: str = "edunary_docs"
     DOCUMENTS_PATH: str = "document/edunary"
 
     # === MongoDB (Chat History) ===
@@ -63,8 +64,9 @@ class Settings(BaseSettings):
     AI_CENTER_API_KEY: str = ""  # Static API key for .NET backend → AI Center calls
 
     # === Cloudflare Worker ===
-    CF_WORKER_URL: str = ""
+    CF_BASE_URL: str = ""
     CF_API_KEY: str = ""
+    CF_EMBEDDING_MODEL: str = "@cf/baai/bge-base-en-v1.5"  # 768-dim
 
     class Config:
         env_file = ".env"

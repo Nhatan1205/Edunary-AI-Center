@@ -1,30 +1,30 @@
 """
-Document loader — load markdown documents, chunk them, and add to ChromaDB.
-Refactored from services/document_loaders.py.
+Document loader — load markdown documents, chunk them, and upsert into Qdrant.
+Refactored from services/document_loaders.py (previously ChromaDB).
 
 Usage (standalone script):
     python -m app.store.document_loader
 """
 
 import os
+import uuid
 
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
-from langchain_chroma import Chroma
 
 from app.core.config import get_settings
 from app.core.logging import get_logger
-from app.embeddings.factory import create_embedding
+from app.store.vector_store import _get_db
 
 logger = get_logger(__name__)
 
 
 def generate_data_store() -> None:
-    """Full pipeline: load documents → split → add to ChromaDB."""
+    """Full pipeline: load documents → split → upsert into Qdrant."""
     documents = load_documents()
     chunks = split_documents(documents)
-    add_to_chroma(chunks)
+    add_to_qdrant(chunks)
 
 
 def load_documents() -> list[Document]:
@@ -52,36 +52,26 @@ def split_documents(documents: list[Document]) -> list[Document]:
     return chunks
 
 
-def add_to_chroma(chunks: list[Document]) -> None:
-    """Add document chunks to ChromaDB, skipping duplicates."""
-    settings = get_settings()
+def add_to_qdrant(chunks: list[Document]) -> None:
+    """
+    Upsert document chunks into Qdrant.
 
-    db = Chroma(
-        collection_name=settings.CHROMA_COLLECTION,
-        persist_directory=settings.CHROMA_PATH,
-        embedding_function=create_embedding(),
-    )
-
-    # Generate IDs for each chunk
+    Qdrant requires point IDs to be either an unsigned integer or a UUID.
+    We derive a deterministic UUID5 from the human-readable chunk string ID
+    so that re-running produces the same UUID → upsert dedup works correctly.
+    The original string ID is preserved in metadata['id'] for source tracking.
+    """
     chunks_with_ids = _calculate_chunk_ids(chunks)
 
-    # Get existing IDs in DB
-    existing_items = db.get(include=[])
-    existing_ids = set(existing_items["ids"])
+    # Convert string IDs → deterministic UUID5
+    qdrant_ids = [
+        str(uuid.uuid5(uuid.NAMESPACE_DNS, chunk.metadata["id"]))
+        for chunk in chunks_with_ids
+    ]
 
-    # Add only new documents
-    new_chunks = []
-    new_ids = []
-    for chunk in chunks_with_ids:
-        if chunk.metadata["id"] not in existing_ids:
-            new_chunks.append(chunk)
-            new_ids.append(chunk.metadata["id"])
-
-    if new_chunks:
-        db.add_documents(new_chunks, ids=new_ids)
-        logger.info(f"Added {len(new_chunks)} new chunks to ChromaDB")
-    else:
-        logger.info("No new chunks to add")
+    db = _get_db()
+    db.add_documents(chunks_with_ids, ids=qdrant_ids)
+    logger.info(f"Upserted {len(chunks_with_ids)} chunks into Qdrant")
 
 
 def _calculate_chunk_ids(chunks: list[Document]) -> list[Document]:

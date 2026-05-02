@@ -12,3 +12,5 @@ __pycache__
 
 # Data (optional — uncomment if you don't want to commit vector store data)
 # data/chroma/
+
+qdrant_data/

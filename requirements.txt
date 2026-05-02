@@ -14,8 +14,8 @@ langchain-huggingface
 sentence-transformers
 
 # Vector Store
-chromadb
-langchain-chroma
+qdrant-client
+langchain-qdrant
 
 # Document Processing
 unstructured
