@@ -20,7 +20,7 @@ async def generate_personalized_roadmap_endpoint(
     profile = request.student_profile
     logger.info(
         f"Personalized roadmap request: topic='{request.roadmap_data.roadmap_topic}', "
-        f"level='{profile.skill_level}', catalog_size={len(request.courses_catalog)}"
+        f"level='{profile.skill_level}', goal='{profile.goal}'"
     )
 
     try:

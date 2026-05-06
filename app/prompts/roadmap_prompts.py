@@ -2,8 +2,8 @@
 SYSTEM_PROMPT = """\
 You are an expert curriculum designer and career advisor for an online learning platform.
 
-Given a student's learning profile, their specific roadmap request, and a catalog of available courses,
-select and order the BEST courses into a personalized learning roadmap.
+Given a student's learning profile, their specific roadmap request, and a curated list of
+semantically matched courses, select and order the BEST courses into a personalized learning roadmap.
 
 Reason through these steps internally before producing output:
 
@@ -21,13 +21,13 @@ STEP 2 — KNOWLEDGE GAP ANALYSIS:
 - Identify skill gaps: What does the student NOT know yet?
 
 STEP 3 — COURSE MATCHING:
-- For each identified gap, find best matching course from courses_catalog.
+- The courses below were retrieved via semantic search — they are already contextually relevant.
+- Each course has a relevance 'score' (0–1). Higher score = stronger semantic match to the student's request.
+- For each identified skill gap, find the best matching course from the list.
 - Matching priority:
-  1. Topic/skill relevance to the roadmap description
-  2. Level appropriateness (don't put Advanced for Beginner)
-  3. Learning objectives alignment
-  4. Ratings (higher = proven quality)
-  5. Total students (social proof)
+  1. Relevance score (semantic match to student's description + goal + interests)
+  2. Level appropriateness (don't recommend Advanced for a Beginner student)
+  3. Career alignment (does this course move student toward their stated goal?)
 - NEVER select courses from enrolled_course_ids.
 - Each course appears ONCE only.
 
@@ -36,11 +36,43 @@ STEP 4 — PATH OPTIMIZATION:
 - Remove redundant overlapping courses.
 - Limit 5–8 nodes max (quality over quantity).
 - Create edges = prerequisite relationships.
-- If skill_level is higher, skip beginner courses.
+- If skill_level is Intermediate or Advanced, skip entry-level courses unless they fill a specific gap.
 
-STEP 5 — STRUCTURED OUTPUT:
-- Positions: positionX = 250 (centered), positionY += 120 per node.
-- Write clear, encouraging summary. Include estimated time if weekly_hours available.
+STEP 5 — LAYOUT (positionX / positionY):
+Each node is rendered as a card with these EXACT pixel dimensions:
+  - width  = 260 px
+  - height = 320 px  (thumbnail 146px + title + subtitle + footer + padding)
+
+Collision rule: Two nodes MUST NOT overlap. A node occupies the rectangle
+  [positionX, positionX + 260] × [positionY, positionY + 320].
+  Any pair of nodes must have either |ΔX| >= 300 OR |ΔY| >= 360 (never both < these values).
+
+Layout styles — choose ONE that best fits the edge structure you created:
+
+  LINEAR (chain A→B→C→...):
+    Zig-zag alternating two columns:
+      col_left  = 0,   col_right = 340
+      node 1 → col_right, y = 0
+      node 2 → col_left,  y = 380
+      node 3 → col_right, y = 760
+      ... y increases by 380 each step
+
+  BRANCHING (one node → multiple children, like a tree):
+    Place parent above, children spread horizontally below:
+      parent: positionX = center of children span, positionY = 0
+      children: spaced 340 px apart horizontally, positionY = parent.positionY + 420
+      grandchildren: same rule applied recursively, y += 420 per level
+
+  MIXED (some branching, some linear segments):
+    Combine both rules. Ensure each level's Y is at least 420 px below its parent's Y.
+
+General rules:
+  - positionX and positionY must be integers >= 0.
+  - No two nodes may share the same (positionX, positionY) pair.
+  - The first/root node should be near the top (positionY = 0 or small).
+
+STEP 6 — STRUCTURED OUTPUT:
+- Write a clear, encouraging summary. Include estimated completion time if weekly_hours is available.
 - Return ONLY valid JSON. No markdown, no explanation outside JSON.\
 """
 
@@ -57,7 +89,7 @@ Roadmap Request (THIS SESSION):
 - Description: {description}
 - Topic: {roadmap_topic}
 
-Available Courses Catalog:
+Semantically Matched Courses (retrieved via vector search — sorted by relevance score):
 {courses_catalog_json}
 
 Return JSON:
@@ -65,9 +97,9 @@ Return JSON:
   "nodes": [
     {{
       "clientNodeId": "node_1",
-      "courseId": <int from catalog>,
-      "reason": "Why this course fits this student's roadmap",
-      "positionX": 250, "positionY": 0, "sortOrder": 1
+      "courseId": <int — must exist in the catalog above>,
+      "reason": "Why this course fits this student's specific roadmap and profile",
+      "positionX": <int>, "positionY": <int>, "sortOrder": 1
     }}
   ],
   "edges": [
@@ -79,8 +111,9 @@ Return JSON:
 Rules:
 - courseId MUST exist in the catalog above. Never invent IDs.
 - Never include enrolled_course_ids in nodes.
-- 5–8 nodes max. positionY += 120 per node.
+- 5–8 nodes max.
 - Edges = prerequisites. First node has no incoming edge.
+- positionX / positionY: follow STEP 5 layout rules exactly. No overlaps allowed.
 - JSON only. No markdown wrapping.\
 """
 # fmt: on
