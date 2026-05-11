@@ -68,6 +68,9 @@ class Settings(BaseSettings):
     CF_API_KEY: str = ""
     CF_EMBEDDING_MODEL: str = "@cf/baai/bge-base-en-v1.5"  # 768-dim
 
+    OPENAI_KEY: str = ""
+    STT_MODEL: str = "whisper-1"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

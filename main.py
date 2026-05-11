@@ -23,6 +23,7 @@ logger = get_logger(__name__)
 from app.controllers.chat_controller import router as chat_router
 from app.controllers.websocket_controller import router as ws_router
 from app.controllers.roadmap_controller import router as roadmap_router
+from app.controllers.quiz_controller import router as quiz_router
 from app.controllers.rag_controller import router as rag_router
 from app.controllers.qdrant_dashboard_controller import router as qdrant_dashboard_router
 from app.controllers.course_embedding_controller import router as course_embedding_router
@@ -69,7 +70,7 @@ app.include_router(rag_router, prefix="/api/rag", tags=["RAG"])
 app.include_router(qdrant_dashboard_router, prefix="/api/qdrant", tags=["Qdrant Dashboard"])
 app.include_router(course_embedding_router, prefix="/api/course-embeddings", tags=["Course Embeddings"])
 app.include_router(user_embedding_router, prefix="/api/user-embeddings", tags=["User Embeddings"])
-# [FUTURE] app.include_router(quiz_router, prefix="/api/quiz", tags=["Quiz"])
+app.include_router(quiz_router, prefix="/api/quiz", tags=["Quiz"])
 
 
 # === Health Check ===
