@@ -21,8 +21,8 @@ class STTConfig(BaseModel):
     Speech-to-Text provider config sent by the .NET backend (from SystemSettings).
     Only needed when video_file_url is provided and no caption text is available.
     """
-    api_key: str = ""
-    model_name: str = "whisper-1"
+    api_key: Optional[str] = None
+    model_name: Optional[str] = "whisper-1"
 
 
 # ─── Learning Objectives ──────────────────────────────────────────────────────
