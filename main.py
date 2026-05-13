@@ -28,6 +28,7 @@ from app.controllers.rag_controller import router as rag_router
 from app.controllers.qdrant_dashboard_controller import router as qdrant_dashboard_router
 from app.controllers.course_embedding_controller import router as course_embedding_router
 from app.controllers.user_embedding_controller import router as user_embedding_router
+from app.controllers.transcription_controller import router as transcription_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -71,6 +72,7 @@ app.include_router(qdrant_dashboard_router, prefix="/api/qdrant", tags=["Qdrant 
 app.include_router(course_embedding_router, prefix="/api/course-embeddings", tags=["Course Embeddings"])
 app.include_router(user_embedding_router, prefix="/api/user-embeddings", tags=["User Embeddings"])
 app.include_router(quiz_router, prefix="/api/quiz", tags=["Quiz"])
+app.include_router(transcription_router, prefix="/api/transcription", tags=["Transcription"])
 
 
 # === Health Check ===
