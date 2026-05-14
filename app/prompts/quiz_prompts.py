@@ -34,6 +34,11 @@ QUESTION TYPE RULES:
 - MultipleChoice: 4–5 choices, 2–3 marked is_correct=true.
 - TrueFalse     : Exactly 2 choices with text "True" and "False", exactly 1 correct.
 
+CONTENT SAFETY:
+- All generated content must be educational, factual, and appropriate for all ages.
+- Do not generate questions containing offensive, biased, discriminatory, or harmful content.
+- If the source material contains inappropriate content, skip it and use only the educational portions.
+
 OUTPUT FORMAT — Return ONLY a valid JSON object, no markdown fences:
 {
   "questions": [
@@ -106,6 +111,11 @@ CHECK EACH QUESTION FOR:
 
 FIX in-place what can be fixed. REMOVE questions that fail checks 2 or 3 and cannot be fixed.
 It is acceptable to return fewer questions than provided, or even an empty array.
+
+CONTENT SAFETY:
+- REMOVE any question containing offensive, biased, or inappropriate content.
+- Ensure all questions and explanations are suitable for an educational environment.
+
 Return the corrected JSON in EXACTLY the same format as input — no markdown fences.
 """
 

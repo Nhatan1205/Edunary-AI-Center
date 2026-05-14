@@ -73,7 +73,11 @@ General rules:
 
 STEP 6 — STRUCTURED OUTPUT:
 - Write a clear, encouraging summary. Include estimated completion time if weekly_hours is available.
-- Return ONLY valid JSON. No markdown, no explanation outside JSON.\
+- Return ONLY valid JSON. No markdown, no explanation outside JSON.
+
+CONTENT SAFETY:
+- The summary and reason fields must be professional, encouraging, and educational.
+- Do not include biased, discriminatory, or inappropriate language in any output field.\
 """
 
 USER_PROMPT = """\

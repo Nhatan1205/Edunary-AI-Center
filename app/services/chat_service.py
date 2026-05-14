@@ -30,6 +30,16 @@ def _handle_greeting(message: str) -> dict:
     }
 
 
+def _handle_unsafe() -> dict:
+    return {
+        "reply": "I'm sorry, but I can't respond to that type of message. "
+                 "I'm here to help you find courses and answer questions about Edunary. "
+                 "How can I assist you today? 😊",
+        "messageType": "text",
+        "courses": None,
+    }
+
+
 def _handle_fallback() -> dict:
     return {
         "reply": "Sorry, I can only answer questions about Edunary courses and platform features. How can I help you today?",
@@ -39,17 +49,17 @@ def _handle_fallback() -> dict:
 
 
 def process_message(session_id: str, message: str) -> dict:
-    logger.info(f">>> START: session={session_id}")
-
     history_data = get_session_history(session_id)
     recent_history = history_data[-10:]
     history_text = _format_history(recent_history)
 
-    intent = classify_intent(message, history_text)  # timer inside intent_service
+    intent = classify_intent(message, history_text)
 
     with timer("Handler dispatch"):
         if "greeting" in intent:
             result = _handle_greeting(message)
+        elif "unsafe" in intent:
+            result = _handle_unsafe()
         elif "search_faq" in intent:
             result = handle_faq(message)
         elif "get_course_information" in intent:
@@ -60,5 +70,4 @@ def process_message(session_id: str, message: str) -> dict:
     save_message(session_id, "user", message)
     save_message(session_id, "assistant", result["reply"])
 
-    logger.info(f"<<< DONE: intent={intent}, messageType={result['messageType']}")
     return result
