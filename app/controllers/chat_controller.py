@@ -25,7 +25,11 @@ def chat(request: ChatRequest, user=Depends(get_current_user)):
     Process a chat message and return a response.
 
     - Generates a session_id if not provided.
+    - Extracts user_id from the authenticated user (JWT) when available;
+      falls back to None for anonymous requests.
+    - Runs input guardrails (length, injection) before processing.
     - Classifies intent and dispatches to the appropriate handler.
+    - Runs output safety check before returning.
     - Returns text reply and optional course cards.
     """
     try:
@@ -48,8 +52,14 @@ def chat(request: ChatRequest, user=Depends(get_current_user)):
                 messageType="text",
             )
 
+        # ── Extract user identity from JWT ─────────────────────────────
+        user_id: str | None = None
+        if user and isinstance(user, dict):
+            # ASP.NET Identity stores user ID under 'nameid' or 'sub'
+            user_id = user.get("nameid") or user.get("sub") or user.get("UserId")
+
         # ── Process ────────────────────────────────────────────────────
-        result = process_message(session_id, message)
+        result = process_message(session_id, message, user_id=user_id)
 
         # ── Output guardrail ───────────────────────────────────────────
         is_safe, _ = check_output_safety(result["reply"])
@@ -61,6 +71,7 @@ def chat(request: ChatRequest, user=Depends(get_current_user)):
             reply=result["reply"],
             messageType=result["messageType"],
             courses=result.get("courses"),
+            is_personalized=result.get("is_personalized", False),
         )
 
     except Exception as e:

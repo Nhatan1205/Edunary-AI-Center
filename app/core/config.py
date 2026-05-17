@@ -71,6 +71,8 @@ class Settings(BaseSettings):
     OPENAI_KEY: str = ""
     STT_MODEL: str = "whisper-1"
 
+    ACCESS_TOKEN_KEY: str = ""
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
