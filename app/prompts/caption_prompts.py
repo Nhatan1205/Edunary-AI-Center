@@ -18,6 +18,8 @@ translation exists in the target language.
 5. Output ONLY the translated segments in the exact same format as the input — no explanations, \
 no markdown, no extra text.
 6. Maintain the segment separator "---" between segments exactly as provided.
+7. If the source content contains profanity or inappropriate language, replace it with \
+a neutral equivalent appropriate for an educational context.
 """
 
 TRANSLATION_USER_PROMPT = """\
