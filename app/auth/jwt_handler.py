@@ -15,20 +15,19 @@ def verify_token(token: str) -> dict:
     Verify a JWT token issued by the .NET Backend.
 
     Args:
-        token: The JWT token string.
+        token: The JWT token string (without 'Bearer ' prefix).
 
     Returns:
-        dict: Token payload (userId, email, roles, etc.)
+        dict: Decoded token payload (sub/nameid, email, roles, etc.)
 
     Raises:
-        AuthenticationError: If the token is invalid or expired.
-
-    TODO: Implement when JWT secret key and algorithm are confirmed.
+        AuthenticationError: If the token is invalid, expired, or key not configured.
     """
     settings = get_settings()
 
-    if not settings.JWT_SECRET_KEY:
-        logger.warning("JWT_SECRET_KEY not configured — cannot verify tokens")
+    secret_key = settings.ACCESS_TOKEN_KEY
+    if not secret_key:
+        logger.warning("ACCESS_TOKEN_KEY not configured — cannot verify JWT tokens")
         raise AuthenticationError("Authentication not configured")
 
     try:
@@ -36,9 +35,10 @@ def verify_token(token: str) -> dict:
 
         payload = jwt.decode(
             token,
-            settings.JWT_SECRET_KEY,
+            secret_key,
             algorithms=[settings.JWT_ALGORITHM],
+            options={"verify_aud": False},  # .NET doesn't set audience by default
         )
         return payload
-    except Exception:
-        raise AuthenticationError("Invalid or expired token")
+    except Exception as e:
+        raise AuthenticationError(f"Invalid or expired token: {e}")

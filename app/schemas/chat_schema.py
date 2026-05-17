@@ -9,6 +9,7 @@ class ChatRequest(BaseModel):
 
     session_id: Optional[str] = None
     message: str
+    user_id: Optional[str] = None  # ASP.NET Identity GUID — omit for anonymous
 
 
 class CourseCard(BaseModel):
@@ -29,3 +30,4 @@ class ChatResponse(BaseModel):
     reply: str
     messageType: str = "text"
     courses: Optional[List[CourseCard]] = None
+    is_personalized: bool = False  # True when response used authenticated user's profile

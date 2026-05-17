@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import get_settings
 from app.core.exceptions import EdunaryAIException
@@ -39,6 +40,9 @@ app = FastAPI(
 
 # Setup templates
 templates = Jinja2Templates(directory="app/templates")
+
+# Mount static files (CSS, JS extracted from templates)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # CORS middleware
 app.add_middleware(
