@@ -30,6 +30,7 @@ from app.controllers.qdrant_dashboard_controller import router as qdrant_dashboa
 from app.controllers.course_embedding_controller import router as course_embedding_router
 from app.controllers.user_embedding_controller import router as user_embedding_router
 from app.controllers.transcription_controller import router as transcription_router
+from app.controllers.quality_check_controller import router as quality_check_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -77,6 +78,7 @@ app.include_router(course_embedding_router, prefix="/api/course-embeddings", tag
 app.include_router(user_embedding_router, prefix="/api/user-embeddings", tags=["User Embeddings"])
 app.include_router(quiz_router, prefix="/api/quiz", tags=["Quiz"])
 app.include_router(transcription_router, prefix="/api/transcription", tags=["Transcription"])
+app.include_router(quality_check_router, prefix="/api/quality-check", tags=["Quality Check"])
 
 
 # === Health Check ===
@@ -142,4 +144,4 @@ if __name__ == "__main__":
 # API chat: http://127.0.0.1:8000/api/chat/
 # Health: http://127.0.0.1:8000/health
 # & "D:\tailieu4\HK1-25-26\New Technology\Demo\AI Backend\chatbot\Scripts\Activate.ps1"
-# python -m app.store.document_loader
+# python -m app.store.document_loader   
