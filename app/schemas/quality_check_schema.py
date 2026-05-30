@@ -28,11 +28,15 @@ class QualityCheckRequest(BaseModel):
     course_title: str
     course_subtitle: str = ""
     course_description: str = ""
+    course_category: str = "None"
+    course_topics: List[str] = Field(default_factory=list)
     learning_objectives: List[str] = Field(default_factory=list)
     requirements: List[str] = Field(default_factory=list)
     target_audience: List[str] = Field(default_factory=list)
     curriculum: List[CurriculumSection] = Field(default_factory=list)
     content_batches: List[ContentBatch] = Field(default_factory=list)
+    check_mode: Optional[str] = "full"
+    changed_fields: Optional[List[str]] = Field(default_factory=list)
     llm_config: Optional[ModelConfig] = None
 
 

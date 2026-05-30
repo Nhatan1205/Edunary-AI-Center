@@ -53,13 +53,17 @@ QUALITY RULES TO ENFORCE:
     - Clear path of alignment: course/section objectives must directly map to sections, lectures, activities, and assessments. If a major skill or topic is promised in objectives, it must have corresponding lectures/assessments.
     - Severity: critical
 
+12. [LP-10] Category & Topic Accuracy:
+    - The course's assigned Category and Topics must accurately represent the actual subject and content of the course. Flag any irrelevant category tags or misleading topic keywords (e.g., tagging a basic Git course as "Cooking" or "Quantum Computing" when it belongs under "Software Engineering" or "Version Control").
+    - Severity: warning
+
 INSTRUCTIONS:
 1. Examine the course metadata and curriculum structure.
 2. Check against each of the rules above.
 3. For each issue found, you MUST:
-   - Specify the exact rule_id (e.g., LP-01, LP-03, LO-01).
+   - Specify the exact rule_id (e.g., LP-01, LP-03, LO-01, LP-10).
    - Specify the category (use "IntendedLearners" for LO rules, "CourseLandingPage" or "CourseTitleSubtitle" or "CourseDescription" for LP rules, and "CourseContent" or "Other" for structural alignment rules).
-   - Provide the location (e.g., "Learning Objective #2", "Subtitle", "Section 3 > Lecture 2").
+   - Provide the location (e.g., "Learning Objective #2", "Subtitle", "Section 3 > Lecture 2", "Course Category / Topics").
    - Quote exact words from the input as evidence. If no text exists to quote, provide a concise reference.
    - Suggest a clear, actionable fix.
 4. If a rule is fully satisfied, do NOT report any issue for it.
@@ -86,6 +90,8 @@ METADATA_ANALYZER_USER_PROMPT = """\
 COURSE TITLE: {course_title}
 COURSE SUBTITLE: {course_subtitle}
 COURSE DESCRIPTION: {course_description}
+COURSE CATEGORY: {course_category}
+COURSE TOPICS: {course_topics}
 
 LEARNING OBJECTIVES:
 {learning_objectives}
