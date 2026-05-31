@@ -233,7 +233,19 @@ OUTPUT FORMAT — Return ONLY a valid JSON object, no markdown fences:
 VALIDATOR_USER_PROMPT = """\
 COURSE METADATA:
 Title: {course_title}
-Objectives: {learning_objectives}
+Subtitle: {course_subtitle}
+Description: {course_description}
+Category: {course_category}
+Topics: {course_topics}
+
+LEARNING OBJECTIVES:
+{learning_objectives}
+
+REQUIREMENTS:
+{requirements}
+
+TARGET AUDIENCE:
+{target_audience}
 
 CURRICULUM STRUCTURE:
 {curriculum_text}
@@ -248,3 +260,4 @@ Audit these proposed issues against the provided curriculum structure and full c
 Verify if the evidence quoted exists and actually violates the quality/policy rules.
 Return the clean, validated issues and the pedagogical analysis_summary in the specified JSON format.
 """
+

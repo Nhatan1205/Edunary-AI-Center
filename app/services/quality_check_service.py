@@ -55,7 +55,7 @@ async def run_quality_check(request: QualityCheckRequest) -> QualityCheckRespons
             raw_metadata_json = await _run_metadata_analyzer(request, curriculum_text)
             
             try:
-                metadata_data = safe_parse_json(raw_metadata_json)
+                metadata_data = json.loads(raw_metadata_json)
                 proposed_issues = metadata_data.get("issues", [])
             except Exception as e:
                 logger.warning(f"[QualityCheck] Failed to parse metadata issues: {e}")
@@ -130,12 +130,14 @@ async def run_quality_check_diff(request: QualityCheckRequest) -> QualityCheckRe
             # Check if any metadata-related fields were modified
             metadata_fields = {
                 "title", "subtitle", "description", "category", "topics", 
-                "learning_objectives", "requirements", "target_audience", "curriculum"
+                "learning_objectives", "requirements", "target_audience", "curriculum",
+                "level", "course_image"
             }
             
             has_metadata_changes = False
             if request.changed_fields:
-                has_metadata_changes = any(f.lower() in metadata_fields for f in request.changed_fields)
+                normalized_changed = {f.lower().replace(" ", "_") for f in request.changed_fields}
+                has_metadata_changes = any(f in metadata_fields for f in normalized_changed)
 
             proposed_issues = []
 
@@ -144,7 +146,7 @@ async def run_quality_check_diff(request: QualityCheckRequest) -> QualityCheckRe
                 logger.info("[QualityCheckDiff] Agent 2: Metadata Analyzer LLM")
                 raw_metadata_json = await _run_metadata_analyzer(request, curriculum_text)
                 try:
-                    metadata_data = safe_parse_json(raw_metadata_json)
+                    metadata_data = json.loads(raw_metadata_json)
                     proposed_issues = metadata_data.get("issues", [])
                 except Exception as e:
                     logger.warning(f"[QualityCheckDiff] Failed to parse metadata issues: {e}")
@@ -195,6 +197,7 @@ async def run_quality_check_diff(request: QualityCheckRequest) -> QualityCheckRe
             logger.info("[QualityCheckDiff] Agent 5: Formatter")
             validated_json = json.dumps({"issues": validated_issues, "analysis_summary": summary}, ensure_ascii=False)
             issues, final_summary = _parse_and_format(validated_json)
+
 
         logger.info("==================================================================")
         logger.info("               [FLOW DIFF TOKEN CONSUMPTION SUMMARY]              ")
@@ -249,8 +252,16 @@ async def _run_metadata_analyzer(request: QualityCheckRequest, curriculum_text: 
 
     llm = _get_llm(request.llm_config)
 
+    system_prompt = METADATA_ANALYZER_SYSTEM_PROMPT
+    if request.check_mode == "changes_only":
+        system_prompt += f"\n\n[CRITICAL DIRECTIVE - DIFF REVIEW MODE]\n" \
+                         f"You are reviewing in DIFF MODE (changes only).\n" \
+                         f"You MUST only analyze and report issues for the following fields that were actually modified:\n" \
+                         f"{', '.join(request.changed_fields)}\n" \
+                         f"Do NOT report any issues for unmodified fields, even if they violate other rules. Strictly ignore unmodified sections/fields."
+
     messages = [
-        ("system", METADATA_ANALYZER_SYSTEM_PROMPT),
+        ("system", system_prompt),
         ("human",  user_prompt),
     ]
     response = await llm.ainvoke(messages)
@@ -263,8 +274,8 @@ async def _run_metadata_analyzer(request: QualityCheckRequest, curriculum_text: 
         logger.info(f"[Metadata Analyzer] Token usage: {usage}")
 
     try:
-        safe_parse_json(raw)
-    except Exception as e:
+        json.loads(raw)
+    except json.JSONDecodeError as e:
         logger.error(f"[Metadata Analyzer] Invalid JSON: {raw[:400]}")
         raise ValueError(f"Metadata Analyzer LLM returned invalid JSON: {e}") from e
 
@@ -290,8 +301,15 @@ async def _run_content_analyzer(
         batch_content_text=batch.content_text,
     )
     
+    system_prompt = CONTENT_ANALYZER_SYSTEM_PROMPT
+    if request.check_mode == "changes_only":
+        system_prompt += f"\n\n[CRITICAL DIRECTIVE - DIFF REVIEW MODE]\n" \
+                         f"You are reviewing in DIFF MODE (changes only).\n" \
+                         f"You MUST only report issues found in the newly added or modified content in this batch.\n" \
+                         f"Do NOT report any issues for unmodified text or existing content. Focus exclusively on the new/changed parts."
+
     messages = [
-        ("system", CONTENT_ANALYZER_SYSTEM_PROMPT),
+        ("system", system_prompt),
         ("human",  user_prompt),
     ]
     
@@ -305,7 +323,7 @@ async def _run_content_analyzer(
         logger.info(f"[Content Analyzer Batch {batch.batch_index}] Token usage: {usage}")
     
     try:
-        data = safe_parse_json(raw)
+        data = json.loads(raw)
         return data.get("issues", [])
     except Exception as e:
         logger.warning(f"[Content Analyzer Batch {batch.batch_index}] Failed to parse JSON: {e}")
@@ -328,20 +346,37 @@ async def _run_validator(
         return [], "Analysis completed. No issues found."
 
     llm = _get_llm(request.llm_config)
-    lo_text = "\n".join(f"- {lo}" for lo in request.learning_objectives) or "None"
+    
+    lo_text  = "\n".join(f"- {lo}" for lo in request.learning_objectives) or "None"
+    req_text = "\n".join(f"- {r}"  for r in request.requirements)         or "None"
+    aud_text = "\n".join(f"- {a}"  for a in request.target_audience)      or "None"
+    topics_text = ", ".join(request.course_topics) or "None"
     
     proposed_json = json.dumps({"issues": proposed_issues}, ensure_ascii=False, indent=2)
     
     user_prompt = VALIDATOR_USER_PROMPT.format(
         course_title=request.course_title,
+        course_subtitle=request.course_subtitle,
+        course_description=request.course_description,
+        course_category=request.course_category,
+        course_topics=topics_text,
         learning_objectives=lo_text,
+        requirements=req_text,
+        target_audience=aud_text,
         curriculum_text=curriculum_text,
         course_content_text=course_content_text,
         proposed_issues_json=proposed_json,
     )
     
+    system_prompt = VALIDATOR_SYSTEM_PROMPT
+    if request.check_mode == "changes_only":
+        system_prompt += f"\n\n[CRITICAL DIRECTIVE - DIFF REVIEW MODE]\n" \
+                         f"You are reviewing in DIFF MODE (changes only).\n" \
+                         f"You MUST filter out any issues that do not relate to the changed fields: {', '.join(request.changed_fields)} or the changed curriculum content in this batch.\n" \
+                         f"Keep only issues that are directly caused by the new changes. Remove all other issues."
+
     messages = [
-        ("system", VALIDATOR_SYSTEM_PROMPT),
+        ("system", system_prompt),
         ("human",  user_prompt),
     ]
     
@@ -355,7 +390,7 @@ async def _run_validator(
         logger.info(f"[Validator] Token usage: {usage}")
     
     try:
-        data = safe_parse_json(raw)
+        data = json.loads(raw)
         return data.get("issues", []), data.get("analysis_summary", "Analysis completed.")
     except Exception as e:
         logger.warning(f"[Validator] Failed to parse Validator JSON: {e} — falling back to proposed issues")
@@ -370,8 +405,8 @@ def _parse_and_format(raw_json: str) -> tuple[list[AiCheckIssue], str]:
     Deterministic — no LLM involved.
     """
     try:
-        data = safe_parse_json(raw_json)
-    except Exception as e:
+        data = json.loads(raw_json)
+    except (json.JSONDecodeError, AttributeError) as e:
         raise ValueError(f"Formatter could not parse analyzer JSON: {e}") from e
 
     issues: list[AiCheckIssue] = []
@@ -415,106 +450,3 @@ def _strip_fences(raw: str) -> str:
     if raw.startswith("```"):
         raw = raw.split("\n", 1)[1].rsplit("```", 1)[0].strip()
     return raw
-
-
-def safe_parse_json(text: str) -> dict:
-    """
-    Robust JSON parser for LLM responses.
-    Handles markdown code fences, leading/trailing conversational text, and minor formatting errors.
-    Supports auto-repair of truncated/cut-off JSON responses (common with strict token limits).
-    """
-    if not text:
-        return {}
-
-    text = text.strip()
-
-    # 1. Remove markdown code fences if present at the boundaries
-    if text.startswith("```"):
-        lines = text.splitlines()
-        if len(lines) >= 2 and lines[-1].startswith("```"):
-            text = "\n".join(lines[1:-1]).strip()
-        else:
-            parts = text.split("```")
-            if len(parts) >= 3:
-                text = parts[1].strip()
-        if text.startswith("json"):
-            text = text[4:].strip()
-
-    # 2. Extract JSON bracketed content if conversational text exists
-    if not (text.startswith("{") or text.startswith("[")):
-        start_idx = text.find("{")
-        if start_idx == -1:
-            start_idx = text.find("[")
-        if start_idx != -1:
-            end_char = "}" if text[start_idx] == "{" else "]"
-            end_idx = text.rfind(end_char)
-            if end_idx != -1 and end_idx > start_idx:
-                text = text[start_idx:end_idx + 1]
-            else:
-                text = text[start_idx:]
-
-    # 3. Clean up non-printable and raw control characters (except newline/tab)
-    text = "".join(ch for ch in text if ord(ch) >= 32 or ch in "\n\r\t")
-
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError as e:
-        logger.warning(f"[safe_parse_json] Direct parse failed ({e}). Attempting JSON repair...")
-        try:
-            repaired_text = _repair_json(text)
-            return json.loads(repaired_text)
-        except Exception as repair_err:
-            logger.error(f"[safe_parse_json] JSON repair failed: {repair_err}")
-            raise e
-
-
-def _repair_json(json_str: str) -> str:
-    """
-    Closes open string quotes and matching brackets/braces for truncated JSON payloads.
-    Also strips trailing commas that appear immediately before structural closures.
-    """
-    json_str = json_str.strip()
-    if not json_str:
-        return "{}"
-
-    in_string = False
-    escape = False
-    stack = []
-    repaired = []
-
-    for char in json_str:
-        repaired.append(char)
-        if escape:
-            escape = False
-            continue
-        if char == "\\":
-            escape = True
-            continue
-        if char == '"':
-            in_string = not in_string
-            continue
-        if not in_string:
-            if char in "{[":
-                stack.append(char)
-            elif char in "]}":
-                if stack:
-                    stack.pop()
-
-    # If truncated inside a string literal, seal the string
-    if in_string:
-        repaired.append('"')
-
-    # Seal all open containers in reverse order
-    while stack:
-        open_sym = stack.pop()
-        close_sym = "}" if open_sym == "{" else "]"
-
-        # Strip trailing commas that would violate JSON syntax right before a closing bracket/brace
-        temp_str = "".join(repaired).strip()
-        if temp_str.endswith(","):
-            repaired = list(temp_str[:-1])
-
-        repaired.append(close_sym)
-
-    return "".join(repaired)
-
