@@ -10,8 +10,6 @@ langchain-core
 langchain-openai
 langchain-ollama
 langchain-google-genai
-langchain-huggingface
-sentence-transformers
 
 # Vector Store
 qdrant-client

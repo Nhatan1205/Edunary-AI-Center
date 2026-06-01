@@ -45,17 +45,6 @@ def create_embedding(settings: Settings = None):
             openai_api_key=settings.OPENAI_API_KEY,
         )
 
-    elif provider == "huggingface":
-        from langchain_huggingface import HuggingFaceEndpointEmbeddings
-
-        if not settings.HF_TOKEN:
-            raise ValueError("HF_TOKEN not found in environment variables")
-
-        return HuggingFaceEndpointEmbeddings(
-            model=settings.HUGGINGFACE_EMBEDDING_MODEL,
-            huggingfacehub_api_token=settings.HF_TOKEN,
-        )
-
     elif provider == "google":
         from langchain_google_genai import GoogleGenerativeAIEmbeddings
 

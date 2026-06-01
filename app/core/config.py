@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     CUSTOM_LLM_MODEL: str = ""
 
     # === Embedding ===
-    EMBEDDING_PROVIDER: str = "huggingface"  # ollama | openai | huggingface | google
+    EMBEDDING_PROVIDER: str = "cloudflare"  # ollama | openai | huggingface | google
     HUGGINGFACE_EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
     OPENAI_API_KEY: str = ""
     OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     QDRANT_URL: str = "http://localhost:6333"  # or Qdrant Cloud URL
     QDRANT_API_KEY: str = ""                    # leave empty for local Docker
     QDRANT_COLLECTION: str = "edunary_docs"
+    QDRANT_TIMEOUT: float = 60.0
     DOCUMENTS_PATH: str = "document/edunary"
 
     # === MongoDB (Chat History) ===

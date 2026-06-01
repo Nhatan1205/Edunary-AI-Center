@@ -28,6 +28,7 @@ def _get_db() -> QdrantVectorStore:
         client = QdrantClient(
             url=settings.QDRANT_URL,
             api_key=settings.QDRANT_API_KEY or None,  # None = no auth (local Docker)
+            timeout=settings.QDRANT_TIMEOUT,
         )
 
         # Auto-create collection if it doesn't exist yet.
