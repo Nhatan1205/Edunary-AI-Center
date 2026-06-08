@@ -102,4 +102,7 @@ def create_llm_from_config(model_config: dict):
         model=model_name,
         temperature=model_config.get("temperature", 0.7),
         max_tokens=model_config.get("max_tokens", 512),
+        default_headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
     )
