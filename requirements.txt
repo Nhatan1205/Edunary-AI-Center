@@ -16,7 +16,7 @@ qdrant-client
 langchain-qdrant
 
 # Document Processing
-unstructured
+unstructured[md]
 langchain-community
 
 # Data Stores
