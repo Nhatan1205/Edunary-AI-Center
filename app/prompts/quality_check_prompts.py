@@ -157,6 +157,17 @@ QUALITY & COMPLIANCE RULES TO ENFORCE:
     - The content types must be diverse enough to support learning. An interactive skill must not rely solely on passive video transcripts; check that there are appropriate practical articles, quizzes, or assignments.
     - Severity: suggestion
 
+11. [CU-15] Curricular Coherence:
+    - Course content must be logically connected across all sections. Concepts introduced in earlier sections must NOT be contradicted or substantially reversed in later sections.
+    - Unnecessary repetition of content already covered in prior sections must be flagged unless it serves a clearly stated learning purpose (e.g., a deliberate review/recap lecture).
+    - Use the PRIOR LEARNING CONTEXT block (when provided) to detect contradictions or redundant repetition.
+    - Severity: critical
+
+12. [CU-16] Constructive Alignment:
+    - Quizzes and assignments must strictly assess only concepts that were explicitly taught in the lecture content within this course.
+    - Flag any assessment question or task that tests concepts NOT present in any lecture of this course (neither in the current batch nor in the PRIOR LEARNING CONTEXT).
+    - Severity: critical
+
 INSTRUCTIONS:
 1. Examine the batch of course content carefully.
 2. Check against each of the rules above.
@@ -191,7 +202,12 @@ Objectives: {learning_objectives}
 
 BATCH SECTIONS & ITEMS: {sections_list}
 
-BATCH FULL CONTENT TEXT:
+PRIOR LEARNING CONTEXT (content from OTHER sections of this course, retrieved for cross-section checks):
+--- BEGIN PRIOR CONTEXT ---
+{prior_learning_context}
+--- END PRIOR CONTEXT ---
+
+BATCH FULL CONTENT TEXT (the sections being analyzed in this batch):
 {batch_content_text}
 
 Perform the quality and policy check analysis on this content batch. Output any issues found in the specified JSON format.
