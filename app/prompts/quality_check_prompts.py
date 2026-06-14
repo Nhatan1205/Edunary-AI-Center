@@ -250,7 +250,6 @@ VALIDATOR_USER_PROMPT = """\
 COURSE METADATA:
 Title: {course_title}
 Subtitle: {course_subtitle}
-Description: {course_description}
 Category: {course_category}
 Topics: {course_topics}
 
@@ -266,14 +265,15 @@ TARGET AUDIENCE:
 CURRICULUM STRUCTURE:
 {curriculum_text}
 
-FULL COURSE CONTENT TEXT:
+RELEVANT COURSE CONTENT SNIPPETS:
 {course_content_text}
 
 PROPOSED ISSUES TO AUDIT:
 {proposed_issues_json}
 
-Audit these proposed issues against the provided curriculum structure and full course content text.
+Audit these proposed issues against the provided curriculum structure and relevant course content snippets.
 Verify if the evidence quoted exists and actually violates the quality/policy rules.
 Return the clean, validated issues and the pedagogical analysis_summary in the specified JSON format.
 """
+
 

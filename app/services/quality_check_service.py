@@ -416,13 +416,13 @@ async def _run_content_analyzer(
     ]
 
     # ── Debug: dump payload to file for inspection ────────────────────────────
-    _dump_debug_payload(
-        course_id=request.course_id,
-        batch_index=batch.batch_index,
-        system_prompt=system_prompt,
-        user_prompt=user_prompt,
-        prior_context=prior_context,
-    )
+    # _dump_debug_payload(
+    #     course_id=request.course_id,
+    #     batch_index=batch.batch_index,
+    #     system_prompt=system_prompt,
+    #     user_prompt=user_prompt,
+    #     prior_context=prior_context,
+    # )
 
     response = await llm.ainvoke(messages)
     raw = _strip_fences(response.content.strip())
@@ -443,6 +443,82 @@ async def _run_content_analyzer(
 
 # ─── Agent 4: Validator Pass ──────────────────────────────────────────────────
 
+def _extract_evidence_context_snippets(
+    proposed_issues: list[dict],
+    course_content_text: str,
+) -> str:
+    """
+    Find where the evidence of each proposed issue is in the full course content,
+    and extract a 500-character snippet around it.
+    """
+    if not course_content_text:
+        return "(No course content available)"
+
+    import re
+
+    snippets = []
+    seen_ranges = [] # list of (start, end)
+    
+    for issue in proposed_issues:
+        evidence = (issue.get("evidence") or "").strip()
+        if not evidence:
+            continue
+            
+        targets = [evidence]
+        
+        # If evidence contains quotes, also try to search for quoted parts
+        quoted_parts = re.findall(r"['\"](.*?)['\"]", evidence)
+        if quoted_parts:
+            targets.extend([p.strip() for p in quoted_parts if len(p.strip()) > 10])
+            
+        # If evidence contains '...', split and search for parts
+        if "..." in evidence:
+            parts = [p.strip() for p in evidence.split("...") if len(p.strip()) > 10]
+            targets.extend(parts)
+            
+        matched_idx = -1
+        matched_len = 0
+        
+        for target in targets:
+            if not target:
+                continue
+            idx = course_content_text.lower().find(target.lower())
+            if idx >= 0:
+                matched_idx = idx
+                matched_len = len(target)
+                break
+                
+        if matched_idx >= 0:
+            # Found match. Extract 500-character window (250 chars before and after match)
+            start = max(0, matched_idx - 250)
+            end = min(len(course_content_text), matched_idx + matched_len + 250)
+            seen_ranges.append((start, end))
+
+    if not seen_ranges:
+        return "(No matching content snippets found for the proposed issues)"
+
+    # Merge overlapping/adjacent ranges to avoid redundancy and save tokens
+    seen_ranges.sort(key=lambda x: x[0])
+    merged_ranges = []
+    for current in seen_ranges:
+        if not merged_ranges:
+            merged_ranges.append(current)
+        else:
+            prev_start, prev_end = merged_ranges[-1]
+            curr_start, curr_end = current
+            # If current starts before or near the previous end, merge them
+            if curr_start <= prev_end + 50:
+                merged_ranges[-1] = (prev_start, max(prev_end, curr_end))
+            else:
+                merged_ranges.append(current)
+
+    for start, end in merged_ranges:
+        snippet_text = course_content_text[start:end].strip()
+        snippets.append(f"... {snippet_text} ...")
+
+    return "\n\n=== RELEVANT CONTEXT ===\n" + "\n\n---\n\n".join(snippets)
+
+
 async def _run_validator(
     request: QualityCheckRequest,
     proposed_issues: list[dict],
@@ -451,12 +527,12 @@ async def _run_validator(
 ) -> tuple[list[dict], str]:
     """
     Auditor LLM validator pass: checks and filters proposed issues against metadata
-    and full course content to eliminate hallucinations.
+    and relevant content snippets to eliminate hallucinations.
     """
     if not proposed_issues:
         return [], "Analysis completed. No issues found."
 
-    llm = _get_llm(request.llm_config)
+    llm = _get_validate_llm(request)
     
     lo_text  = "\n".join(f"- {lo}" for lo in request.learning_objectives) or "None"
     req_text = "\n".join(f"- {r}"  for r in request.requirements)         or "None"
@@ -465,17 +541,19 @@ async def _run_validator(
     
     proposed_json = json.dumps({"issues": proposed_issues}, ensure_ascii=False, indent=2)
     
+    # Extract relevant snippets around the evidence of proposed issues to save tokens
+    content_snippets = _extract_evidence_context_snippets(proposed_issues, course_content_text)
+    
     user_prompt = VALIDATOR_USER_PROMPT.format(
         course_title=request.course_title,
         course_subtitle=request.course_subtitle,
-        course_description=request.course_description,
         course_category=request.course_category,
         course_topics=topics_text,
         learning_objectives=lo_text,
         requirements=req_text,
         target_audience=aud_text,
         curriculum_text=curriculum_text,
-        course_content_text=course_content_text,
+        course_content_text=content_snippets,
         proposed_issues_json=proposed_json,
     )
     
@@ -490,6 +568,15 @@ async def _run_validator(
         ("system", system_prompt),
         ("human",  user_prompt),
     ]
+
+
+    # ── Debug: dump validator payload to file for inspection ─────────────────
+    # _dump_validator_debug_payload(
+    #     course_id=request.course_id,
+    #     system_prompt=system_prompt,
+    #     user_prompt=user_prompt,
+    #     proposed_issues_count=len(proposed_issues),
+    # )
     
     response = await llm.ainvoke(messages)
     raw = _strip_fences(response.content.strip())
@@ -556,6 +643,16 @@ def _get_llm(llm_config):
     return create_llm()
 
 
+def _get_validate_llm(request):
+    """Select validator LLM — prefer validate_llm_config, fallback to llm_config."""
+    config = request.validate_llm_config or request.llm_config
+    if config and config.api_base:
+        logger.info(f"[Validator LLM] Using config: model={config.model_name}")
+        return create_llm_from_config(config.model_dump())
+    logger.info("[Validator LLM] Using default .env LLM provider")
+    return create_llm()
+
+
 def _strip_fences(raw: str) -> str:
     """Strip markdown code fences if LLM wraps output in ```json ... ```."""
     if raw.startswith("```"):
@@ -594,3 +691,36 @@ def _dump_debug_payload(
         logger.debug(f"[DebugDump] Payload written to {filename}")
     except Exception as ex:
         logger.warning(f"[DebugDump] Failed to write debug payload: {ex}")
+
+
+def _dump_validator_debug_payload(
+    course_id: int,
+    system_prompt: str,
+    user_prompt: str,
+    proposed_issues_count: int,
+) -> None:
+    """
+    Serialize the exact LLM payload sent to the Validator agent to a JSON file.
+    Files are written to data/debug_payloads/ and named:
+        validator_course<id>_<timestamp>.json
+    This is intended for debugging token usage and prompt content before invocation.
+    """
+    try:
+        _DEBUG_DIR.mkdir(parents=True, exist_ok=True)
+        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        filename = _DEBUG_DIR / f"validator_course{course_id}_{ts}.json"
+        payload = {
+            "course_id": course_id,
+            "timestamp_utc": ts,
+            "proposed_issues_count": proposed_issues_count,
+            "system_prompt_length": len(system_prompt),
+            "user_prompt_length": len(user_prompt),
+            "system_prompt": system_prompt,
+            "user_prompt": user_prompt,
+        }
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2, ensure_ascii=False)
+        logger.debug(f"[ValidatorDebugDump] Payload written to {filename}")
+    except Exception as ex:
+        logger.warning(f"[ValidatorDebugDump] Failed to write debug payload: {ex}")
+
