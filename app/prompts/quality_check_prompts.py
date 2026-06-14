@@ -157,6 +157,17 @@ QUALITY & COMPLIANCE RULES TO ENFORCE:
     - The content types must be diverse enough to support learning. An interactive skill must not rely solely on passive video transcripts; check that there are appropriate practical articles, quizzes, or assignments.
     - Severity: suggestion
 
+11. [CU-15] Curricular Coherence:
+    - Course content must be logically connected across all sections. Concepts introduced in earlier sections must NOT be contradicted or substantially reversed in later sections.
+    - Unnecessary repetition of content already covered in prior sections must be flagged unless it serves a clearly stated learning purpose (e.g., a deliberate review/recap lecture).
+    - Use the PRIOR LEARNING CONTEXT block (when provided) to detect contradictions or redundant repetition.
+    - Severity: critical
+
+12. [CU-16] Constructive Alignment:
+    - Quizzes and assignments must strictly assess only concepts that were explicitly taught in the lecture content within this course.
+    - Flag any assessment question or task that tests concepts NOT present in any lecture of this course (neither in the current batch nor in the PRIOR LEARNING CONTEXT).
+    - Severity: critical
+
 INSTRUCTIONS:
 1. Examine the batch of course content carefully.
 2. Check against each of the rules above.
@@ -191,7 +202,12 @@ Objectives: {learning_objectives}
 
 BATCH SECTIONS & ITEMS: {sections_list}
 
-BATCH FULL CONTENT TEXT:
+PRIOR LEARNING CONTEXT (content from OTHER sections of this course, retrieved for cross-section checks):
+--- BEGIN PRIOR CONTEXT ---
+{prior_learning_context}
+--- END PRIOR CONTEXT ---
+
+BATCH FULL CONTENT TEXT (the sections being analyzed in this batch):
 {batch_content_text}
 
 Perform the quality and policy check analysis on this content batch. Output any issues found in the specified JSON format.
@@ -234,7 +250,6 @@ VALIDATOR_USER_PROMPT = """\
 COURSE METADATA:
 Title: {course_title}
 Subtitle: {course_subtitle}
-Description: {course_description}
 Category: {course_category}
 Topics: {course_topics}
 
@@ -250,14 +265,15 @@ TARGET AUDIENCE:
 CURRICULUM STRUCTURE:
 {curriculum_text}
 
-FULL COURSE CONTENT TEXT:
+RELEVANT COURSE CONTENT SNIPPETS:
 {course_content_text}
 
 PROPOSED ISSUES TO AUDIT:
 {proposed_issues_json}
 
-Audit these proposed issues against the provided curriculum structure and full course content text.
+Audit these proposed issues against the provided curriculum structure and relevant course content snippets.
 Verify if the evidence quoted exists and actually violates the quality/policy rules.
 Return the clean, validated issues and the pedagogical analysis_summary in the specified JSON format.
 """
+
 

@@ -31,6 +31,7 @@ from app.controllers.course_embedding_controller import router as course_embeddi
 from app.controllers.user_embedding_controller import router as user_embedding_router
 from app.controllers.transcription_controller import router as transcription_router
 from app.controllers.quality_check_controller import router as quality_check_router
+from app.controllers.curriculum_controller import router as curriculum_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -49,7 +50,6 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://localhost:44447",
         "https://edunary.runasp.net"
     ],
     allow_credentials=True,
@@ -79,6 +79,7 @@ app.include_router(user_embedding_router, prefix="/api/user-embeddings", tags=["
 app.include_router(quiz_router, prefix="/api/quiz", tags=["Quiz"])
 app.include_router(transcription_router, prefix="/api/transcription", tags=["Transcription"])
 app.include_router(quality_check_router, prefix="/api/quality-check", tags=["Quality Check"])
+app.include_router(curriculum_router, prefix="/api/curriculum", tags=["Curriculum"])
 
 
 # === Health Check ===

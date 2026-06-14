@@ -4,6 +4,7 @@ from typing import Optional, List
 from pydantic import BaseModel, Field
 
 from app.schemas.model_config import ModelConfig
+from app.schemas.rag_schema import EmbeddingConfig, QdrantConfig
 
 
 class CurriculumItem(BaseModel):
@@ -21,6 +22,8 @@ class ContentBatch(BaseModel):
     batch_index: int
     sections: List[str]
     content_text: str
+    # Item IDs in this batch — used to exclude them from cross-section vector search
+    item_ids: List[str] = Field(default_factory=list)
 
 
 class QualityCheckRequest(BaseModel):
@@ -38,6 +41,10 @@ class QualityCheckRequest(BaseModel):
     check_mode: Optional[str] = "full"
     changed_fields: Optional[List[str]] = Field(default_factory=list)
     llm_config: Optional[ModelConfig] = None
+    validate_llm_config: Optional[ModelConfig] = None
+    # Optional configs for cross-section context injection via Qdrant
+    embedding_config: Optional[EmbeddingConfig] = None
+    qdrant_config: Optional[QdrantConfig] = None
 
 
 class AiCheckIssue(BaseModel):
