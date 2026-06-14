@@ -327,8 +327,27 @@ async def _fetch_prior_context(request: QualityCheckRequest, batch) -> str:
     try:
         from app.services.curriculum_embedding_service import search_related_lectures
 
-        # Use the batch content text as the query to find semantically related prior sections
-        query_text = batch.content_text[:1500]  # cap query length for embedding
+        # Extract section and lecture titles to build a query text
+        import re
+        sections_found = re.findall(r"^# Section:\s*(.*)$", batch.content_text, re.MULTILINE)
+        lectures_raw = re.findall(r"^## Lecture:\s*(.*)$", batch.content_text, re.MULTILINE)
+        
+        lectures_found = []
+        for l in lectures_raw:
+            l = l.strip()
+            for suffix in ["(Article)", "(Video)", "(Lecture)"]:
+                if l.endswith(suffix):
+                    l = l[:-len(suffix)].strip()
+            if l:
+                lectures_found.append(l)
+
+        titles = [s.strip() for s in sections_found if s.strip()] + lectures_found
+        if titles:
+            query_text = ", ".join(titles)
+        else:
+            query_text = batch.content_text[:1500]
+
+        logger.info(f"[Content Analyzer Batch {batch.batch_index}] Querying vector store using text: {query_text}")
         exclude_ids = batch.item_ids or []
 
         results = await asyncio.to_thread(
@@ -404,7 +423,6 @@ async def _run_content_analyzer(
         user_prompt=user_prompt,
         prior_context=prior_context,
     )
-    # ─────────────────────────────────────────────────────────────────────────
 
     response = await llm.ainvoke(messages)
     raw = _strip_fences(response.content.strip())
