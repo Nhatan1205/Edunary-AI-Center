@@ -377,3 +377,53 @@ def search_related_lectures(
         )
 
     return results
+
+
+def get_lecture_chunks(
+    course_id: int,
+    item_id: str,
+    qdrant_config: Optional[QdrantConfig] = None,
+) -> List[CurriculumSearchResult]:
+    """Retrieve all chunks belonging to a specific lecture item_id directly from Qdrant."""
+    client, _ = build_qdrant_client(qdrant_config)
+    collection = (
+        (qdrant_config.collection if qdrant_config else None) or CURRICULUM_COLLECTION
+    )
+
+    if not client.collection_exists(collection):
+        return []
+
+    search_filter = Filter(
+        must=[
+            FieldCondition(key="course_id", match=MatchValue(value=course_id)),
+            FieldCondition(key="item_id", match=MatchValue(value=item_id)),
+        ]
+    )
+
+    points, _ = client.scroll(
+        collection_name=collection,
+        scroll_filter=search_filter,
+        limit=10,  # a lecture shouldn't have more than 10 chunks
+        with_payload=True,
+        with_vectors=False,
+    )
+
+    # Sort chunks by chunk_sub_index to preserve order
+    points_sorted = sorted(points, key=lambda p: (p.payload or {}).get("chunk_sub_index", 0))
+
+    results = []
+    for hit in points_sorted:
+        payload = hit.payload or {}
+        results.append(
+            CurriculumSearchResult(
+                course_id=int(payload.get("course_id", 0)),
+                section_id=payload.get("section_id", ""),
+                section_title=payload.get("section_title", ""),
+                item_id=payload.get("item_id", ""),
+                item_title=payload.get("item_title", ""),
+                item_type=payload.get("item_type", ""),
+                content_text=payload.get("content_text", ""),
+                score=1.0,  # direct match
+            )
+        )
+    return results
