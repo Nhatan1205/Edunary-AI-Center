@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,8 +17,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
     <!-- Chatbot stylesheet (extracted) -->
-    <link rel="stylesheet" href="/static/css/chat.css">
+    <link rel="stylesheet" href="./static/css/chat.css">
 </head>
+
 <body>
     <div class="chat-widget" id="chatWidget">
         <div class="chat-container">
@@ -26,19 +28,15 @@
 
             <!-- Input area -->
             <div class="chat-input">
-                <input
-                    type="text"
-                    class="input-field"
-                    id="messageInput"
-                    placeholder="Type your message..."
-                    maxlength="2000"
-                />
+                <input type="text" class="input-field" id="messageInput" placeholder="Type your message..."
+                    maxlength="2000" />
                 <button class="send-button" id="sendButton" disabled>Send</button>
             </div>
         </div>
     </div>
 
     <!-- Chatbot logic (extracted) -->
-    <script src="/static/js/chatbot.js"></script>
+    <script src="./static/js/chatbot.js"></script>
 </body>
+
 </html>

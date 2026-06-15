@@ -13,7 +13,7 @@ marked.setOptions({
     gfm: true,
     highlight: function (code, lang) {
         if (lang && hljs.getLanguage(lang)) {
-            try { return hljs.highlight(code, { language: lang }).value; } catch (e) {}
+            try { return hljs.highlight(code, { language: lang }).value; } catch (e) { }
         }
         return hljs.highlightAuto(code).value;
     }
@@ -76,8 +76,9 @@ class ChatBot {
     connectWebSocket() {
         try {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            // Token is NOT in the URL — sent as first message after connect.
-            const wsUrl = `${protocol}//${window.location.host}/ws/${this.sessionId}`;
+            let currentPath = window.location.pathname;
+            if (!currentPath.endsWith('/')) currentPath += '/';
+            const wsUrl = `${protocol}//${window.location.host}${currentPath}ws/${this.sessionId}`;
 
             this.websocket = new WebSocket(wsUrl);
 
@@ -97,7 +98,7 @@ class ChatBot {
                 try {
                     const data = JSON.parse(event.data);
                     this._handleWsMessage(data);
-                } catch (_) {}
+                } catch (_) { }
             };
 
             this.websocket.onclose = (event) => {
@@ -108,8 +109,8 @@ class ChatBot {
                 }
             };
 
-            this.websocket.onerror = () => {};
-        } catch (_) {}
+            this.websocket.onerror = () => { };
+        } catch (_) { }
     }
 
     _handleWsMessage(data) {

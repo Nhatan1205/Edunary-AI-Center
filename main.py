@@ -38,6 +38,7 @@ app = FastAPI(
     title=settings.APP_TITLE,
     version=settings.APP_VERSION,
     description="Edunary AI Center — Chatbot, Roadmap Generator, Quiz Creator",
+    root_path="/ai-center"
 )
 
 # Setup templates
@@ -50,7 +51,9 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://edunary.runasp.net"
+        "https://edunary.runasp.net",
+        "https://edunary.io.vn",
+        "https://localhost:44447",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -146,3 +149,4 @@ if __name__ == "__main__":
 # Health: http://127.0.0.1:8000/health
 # & "D:\tailieu4\HK1-25-26\New Technology\Demo\AI Backend\chatbot\Scripts\Activate.ps1"
 # python -m app.store.document_loader   
+# Get-ChildItem -Exclude "venv", "qdrant_data", ".git", "ai-center.zip" | Compress-Archive -DestinationPath .\ai-center.zip -Force
